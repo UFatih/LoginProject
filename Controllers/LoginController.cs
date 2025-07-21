@@ -15,6 +15,21 @@ namespace LoginProject.Controllers
         }
 
 
+
+        [HttpGet] 
+        public IActionResult Success()
+        {
+            return View(); 
+        }
+
+        [HttpGet] 
+        public IActionResult Error()
+        {
+            return View(); 
+        }
+
+
+
         [HttpGet]
         public IActionResult Loginn()
         {
@@ -22,16 +37,18 @@ namespace LoginProject.Controllers
         }
 
         [HttpPost]
-        public IActionResult Loginn(BaseUser entity)
+        public IActionResult Loginn([FromBody] BaseUser entity)
         {
 
             if (_userService.ValidateUser(entity.email, entity.password))
             {
-                return View("Success");
+                //return View("Success");
+                return Json(true);
             }
             else
             {
-                return View("Error");
+                //return View("Error");
+                return Json(false);
             }
 
         }

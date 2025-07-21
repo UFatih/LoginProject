@@ -3,28 +3,59 @@
 *@
 @{
     // <form action="Login/Loginn" method="post">
-        <h3 style="text-align = center">Login </h3> <br />
-        <div class="form-group">
-            <label for="exampleInputEmail1">Email Address</label>
-            <input type="email" class="form-control" name="email" id="exampleInputEmail1" aria-describedby="emailHelp">
-            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-        </div>
-        <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" name="password" id="exampleInputPassword1">
-        </div>
-        <div>
-            <br />
-        </div>
-        <button type="button" class="btn btn-primary" id="submitbutton">Login</button>
+                                        <h3 style="text-align = center">Login </h3> <br />
+                                        <div class="form-group">
+                                            <label for="exampleInputEmail1">Email Address</label>
+                                            <input type="email" class="form-control" name="email" id="exampleInputEmail1" aria-describedby="emailHelp">
+                                            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="exampleInputPassword1">Password</label>
+                                            <input type="password" class="form-control" name="password" id="exampleInputPassword1">
+                                        </div>
+                                        <div>
+                                            <br />
+                                        </div>
+                                        <button type="button" class="btn btn-primary" id="submitbutton">Login</button>
     // </form>
 
 
-}
+} 
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    //Javascript ve jquery ile button un submission işlemini gerçekleştir.
-    // Login Controller a istek at.
+    $(document).ready(function() {
+    $("#submitbutton").click(function() { 
+        debugger;
+        email = $("input[name='email']").val();
+        password = $("input[name='password']").val();
 
+                    $.ajax({
+                        url: "@Url.Action("Loginn", "Login")",
+                        type: "post",
+                        contentType: "application/json; charset=utf-8",
+                         data: JSON.stringify({Id:0, email: email, password: password}),
+                        // data: JSON.parse({ Id: 0, email: email, password: password }),
+                        // data: { Id:0, email: email, password: password },
+                        // dataType: 'json',
+                        success: function(resp) {
+                            if (resp == true)  //I tried, if (resp.success == true)
+                            {
+                                window.location.href = "/Login/Success"; 
+                            }
+                            else 
+                            {
+                                window.location.href = "/Login/Error";
+                                
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert("Unexpected result has occured.");
+                            console.log(error);
+                        }
+
+                 });
+            });
+        });
 
 </script>
