@@ -3,36 +3,67 @@
 *@
 @{
 
+    <style>
+        body {
+            background-image: url('/img/bg7.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+        }
+
+        footer {
+            background-color: floralwhite !important;
+        }
+
+        .login-container {
+            background-color: whitesmoke;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            margin: auto;
+            margin-top: 100px;
+        }
+
+        h3 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+
     @model Entities.BaseUser 
+    <div class="container login-container">
+                            <form>
+                            <h2>My Profile</h2>
+                                <div class="form-row">
+                                    <div class="form-group col-md-10">
+                                        <label for="inputEmail4">Id</label>
+                                        <input type="text" class="form-control" id="IdId" readonly value="@Model.Id">
+                                    </div>
+                                    <div class="form-group col-md-10">
+                                        <label for="inputEmail4">Email</label>
+                                        <input type="email" class="form-control" id="inputEmail4" value="@Model.email">
+                                    </div>
+                                    <div class="form-group col-md-10">
+                                        <label for="inputPassword4">Password</label>
+                                        <input type="password" class="form-control" id="inputPassword4" value="@Model.password">
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-10">
+                                    <label for="inputUsername">Username</label>
+                                <input type="text" class="form-control" id="inputUsername" value="@Model.username">
+                                <span id="usernamewarning" style="display:none; color:red; font-size: 1em;"> Maximum 10 characters!</span>
+                                </div>
+                                <div class="form-group col-md-10">
+                                    <label for="inputUsername">Job</label>
+                                    <input type="text" class="form-control" id="inputJob" placeholder="Your expertise" value="@Model.job" >
+                                </div>
 
-            <form>
-            <h2>My Profile</h2>
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="inputEmail4">Id</label>
-                        <input type="text" class="form-control" id="IdId" readonly value="@Model.Id">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="inputEmail4">Email</label>
-                        <input type="email" class="form-control" id="inputEmail4" value="@Model.email">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="inputPassword4">Password</label>
-                        <input type="password" class="form-control" id="inputPassword4" value="@Model.password">
-                    </div>
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="inputUsername">Username</label>
-                <input type="text" class="form-control" id="inputUsername" value="@Model.username">
-                </div>
-                <div class="form-group col-md-6">
-                    <label for="inputUsername">Job</label>
-                    <input type="text" class="form-control" id="inputJob" placeholder="Your expertise" value="@Model.job" >
-                </div>
-
-                <br />
-                <button type="button" class="btn btn-primary" id="updatebutton">Save</button>
-            </form>
+                                <br />
+                                <button type="button" class="btn btn-primary" id="updatebutton">Save</button>
+                            </form>
+    </div>
 }
 
 
@@ -40,25 +71,35 @@
 
 <script> 
 
-    //Update
+    //Live Listener for character 10
+    document.getElementById("inputUsername").addEventListener("input", function () {
+        const input = this.value;
+        const errorMsg = document.getElementById("usernamewarning");
+        const updatebutton = document.getElementById("updatebutton")
 
-    //$(document).on("click", "updatebutton", function () {
-        // var updateuser = {
-        //     Id: $("IdId").val(),
-        //     email: $("inputEmail4").val(),
-        //     password: $("inputPassword4").val(),
-        //     username: $("inputUsername").val(),
-        //     job: $("inputJob").val()
-        // };
+        if (input.length > 10) {
+            errorMsg.style.display = "inline";
+            updatebutton.disabled = true;
+        } else {
+            errorMsg.style.display = "none";
+            updatebutton.disabled = false;
+        }
+    });
+
+    //Update
 
         $("#updatebutton").click(function () {
 
         var username = $("#inputUsername").val();
 
-        if (username.length > 10) {
-            alert("Maximum 10 characters!");
-            return;
-        }
+            if (username.length > 10) {
+                $("#usernamewarning").show();
+            }
+            else 
+            {
+                $("#usernamewarning").hide();
+            }   
+
             var updateUser = {
                 Id: $("#IdId").val(),
                 email: $("#inputEmail4").val(),

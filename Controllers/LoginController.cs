@@ -112,8 +112,6 @@ namespace LoginProject.Controllers
         //    return Ok(new { Message = "User has been updated" });
         //    //return RedirectToAction("Success");
 
-
-
         //}
 
     }

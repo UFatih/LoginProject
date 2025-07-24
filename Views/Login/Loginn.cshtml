@@ -2,14 +2,45 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    <style>
+        body {
+            background-image: url('/img/bg7.jpg'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            height: 100vh;
+        }
+
+        footer {
+            background-color: floralwhite !important;
+        }
+
+        .login-container {
+            background-color: whitesmoke;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            margin: auto;
+            margin-top: 100px;
+        }
+
+        h3 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+   
     // <form action="Login/Loginn" method="post">
+
+                                 <div class="container login-container">
                                         <h3 style="text-align = center">Login </h3> <br />
-                                        <div class="form-group col-md-6">
+                                        <div class="form-group col-md-9">
                                             <label for="exampleInputEmail1">Email Address</label>
                                             <input type="email" class="form-control" name="email" id="exampleInputEmail1" aria-describedby="emailHelp">
-                                            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                                            <small id="emailHelp" class="form-text ">We'll never share your email with anyone else.</small>
                                         </div>
-                                         <div class="form-group col-md-6">
+                                         <div class="form-group col-md-9 py-2">
                                             <label for="exampleInputPassword1">Password</label>
                                             <input type="password" class="form-control" name="password" id="exampleInputPassword1">
                                         </div>
@@ -17,6 +48,7 @@
                                             <br />
                                         </div>
                                         <button type="button" class="btn btn-primary" id="submitbutton">Login</button>
+                               </div>
     // </form>
 
 
