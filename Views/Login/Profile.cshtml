@@ -2,4 +2,86 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+
+    @model Entities.BaseUser 
+
+            <form>
+            <h2>My Profile</h2>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="inputEmail4">Id</label>
+                        <input type="text" class="form-control" id="IdId" readonly value="@Model.Id">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputEmail4">Email</label>
+                        <input type="email" class="form-control" id="inputEmail4" value="@Model.email">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="inputPassword4">Password</label>
+                        <input type="password" class="form-control" id="inputPassword4" value="@Model.password">
+                    </div>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputUsername">Username</label>
+                <input type="text" class="form-control" id="inputUsername" value="@Model.username">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputUsername">Job</label>
+                    <input type="text" class="form-control" id="inputJob" placeholder="Your expertise" value="@Model.job" >
+                </div>
+
+                <br />
+                <button type="button" class="btn btn-primary" id="updatebutton">Save</button>
+            </form>
 }
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script> 
+
+    //Update
+
+    //$(document).on("click", "updatebutton", function () {
+        // var updateuser = {
+        //     Id: $("IdId").val(),
+        //     email: $("inputEmail4").val(),
+        //     password: $("inputPassword4").val(),
+        //     username: $("inputUsername").val(),
+        //     job: $("inputJob").val()
+        // };
+
+        $("#updatebutton").click(function () {
+
+        var username = $("#inputUsername").val();
+
+        if (username.length > 10) {
+            alert("Maximum 10 characters!");
+            return;
+        }
+            var updateUser = {
+                Id: $("#IdId").val(),
+                email: $("#inputEmail4").val(),
+                password: $("#inputPassword4").val(),
+                username: $("#inputUsername").val(),
+                job: $("#inputJob").val()
+            };
+
+        debugger;
+            $.ajax({
+                url: "@Url.Action("Profile", "Login")",
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(updateUser),
+                success: function (update) {
+                    window.location.href = "/Login/Success";
+                }, 
+                error: function (xhr, status, error) {
+                    alert("Unexpected result has occured.");
+                    console.log(error);
+                }
+            });
+    
+    });
+
+</script>

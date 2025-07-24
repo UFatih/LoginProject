@@ -2,6 +2,124 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    <h3> Login Succesfully </h3>
+                                <h2> Login Succesfully 🎉🎉 </h2>
+                                <br />
+
+    
+    @model List<Entities.BaseUser>
+
+                                <h3> User Informations </h3>
+
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Email</th>
+                                        <th>Password</th>
+                                        <th>Username</th>
+                                        <th>Job</th>
+                                        <th>Operation</th>
+                                        <br />
+                                        <div class="py-3">
+                                        <a href="@Url.Action("Profile", "Login")" class="btn btn-info">+Add User</a>
+                                        </div>
+                                                                    
+                                    </tr>                         
+                                </thead>
+                                <tbody>
+                               
+                                    @foreach (var user in Model) {
+                                        <tr>
+                                            <td>@user.Id</td>
+                                            <td>@user.email</td>
+                                            <td>@user.password</td>
+                                            <td>@user.username</td>
+                                            <td>@user.job</td>
+                                            <td>
+                                                <a class="btn btn-warning" data-userid="@user.Id" id="submitbuttonn1" href="@Url.Action("Profile", "Login", new { Id = user.Id })">Edit</a>
+                                                <button type="button" class="btn btn-danger delete-btn" data-userid="@user.Id" id="submitbuttonn2">Delete</button>
+                                               
+                                            </td>
+                                                
+                                        </tr>                                 
+                                    }
+                                </tbody>
+                            </table>
 
 }
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    //Edit
+    $(document).on("click", "submitbuttonn1", function () {
+        
+        var Id = $(this).data("userid"); //data("Id");
+        debugger;
+
+            $.ajax({
+                url: "@Url.Action("Profile", "Login")",
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ Id: Id}),
+                success: function (edit) {              
+                     window.location.href = "/Login/Profile?id" +id;                                 
+                },
+                error: function (xhr, status, error) {
+                    alert("Unexpected result has occured.");
+                    console.log(error);
+                }
+            });
+       
+    });
+
+    
+     //Delete
+    $(".delete-btn").click(function () {
+               
+            debugger;
+            var Id = $(this).data("userid");
+
+
+            $.ajax({
+                url: "@Url.Action("Success", "Login")",
+                type: "post",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(Id),
+                success: function (deletee) {
+                    alert("The user has been deleted.");
+                    location.reload();
+                    //window.location.href = "/Login/Success";
+                },
+                error: function (xhr, status, error) {
+                    alert("Unexpected error occurred.");
+                    console.log(error);
+                }
+            });
+    });
+
+
+
+     //Add 
+    $(document).on("click", "addbutton", function () {
+
+        var username = $("#inputUsername").val();
+
+
+        $.ajax({
+            url: "@Url.Action("Profile", "Login")",
+            type: "Post",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(),
+            success: function (add) {
+                window.location.href = "/Login/Profile;
+            },
+            error: function (xhr, status, error) {
+                alert("Unexpected result has occured.");
+                console.log(error);
+            }
+        });
+    });
+
+</script>
+

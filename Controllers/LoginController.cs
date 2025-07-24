@@ -14,13 +14,21 @@ namespace LoginProject.Controllers
             _userService = userService;
         }
 
-
-
         [HttpGet] 
         public IActionResult Success()
         {
-            return View(); 
+            var users = _userService.GetAllUsers();  
+            return View(users);
+            
         }
+
+        [HttpPost] //Delete
+        public IActionResult Success([FromBody] int Id) 
+        {
+            _userService.UserDelete(Id);
+            return Ok("User has been deleted.");
+        }
+
 
         [HttpGet] 
         public IActionResult Error()
@@ -36,7 +44,10 @@ namespace LoginProject.Controllers
             return View();
         }
 
-        [HttpPost]
+
+        
+
+        [HttpPost] //Login Page
         public IActionResult Loginn([FromBody] BaseUser entity)
         {
 
@@ -53,9 +64,57 @@ namespace LoginProject.Controllers
 
         }
 
-        public IActionResult Profile() 
-        { 
-            return View();
+
+        //[HttpGet] // Edit
+        //public IActionResult Profile(int Id)
+        //{
+        //    var userprofile = _userService.GetUserById(Id);
+        //    return View(userprofile);
+
+        //}
+
+
+        [HttpGet] //Add, Edit
+        public IActionResult Profile(int? Id)
+        {
+            if (Id == null)
+            {
+                return View(new BaseUser());
+            }
+            else
+            {
+                var userprofile = _userService.GetUserById(Id.Value);
+                return View(userprofile);
+            }
+
         }
+
+
+        [HttpPost] // Update + New User operation
+        public IActionResult Profile([FromBody] BaseUser entity)
+        {
+            if (entity.Id == null)
+            {
+                _userService.UserAdd(entity);
+                return Ok(new { Message = "User has been added" });
+            }
+            else
+            {
+                _userService.UserUpdate(entity);
+                return Ok(new { Message = "User has been updated" });
+            }
+        }
+
+        //[HttpPost] // Update, Add Method Update
+        //public IActionResult Profile([FromBody] BaseUser entity) 
+        //{
+        //    _userService.UserUpdate(entity);
+        //    return Ok(new { Message = "User has been updated" });
+        //    //return RedirectToAction("Success");
+
+
+
+        //}
+
     }
 }
