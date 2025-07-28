@@ -104,6 +104,29 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+
+        //Edit
+        $(document).on("click", "submitbuttonn1", function () {
+
+            var Id = $(this).data("userid");
+            debugger;
+
+            $.ajax({
+                url: "@Url.Action("Profile", "Login")",
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ Id: Id }),
+                success: function (edit) {
+                    window.location.href = "/Login/Profile?id" + id;
+                },
+                error: function (xhr, status, error) {
+                    alert("Unexpected result has occured.");
+                    console.log(error);
+                }
+            });
+
+        });
+
         // Delete
         $(".delete-btn").click(function () {
             var Id = $(this).data("userid");
@@ -119,6 +142,27 @@
                 },
                 error: function (xhr, status, error) {
                     alert("Unexpected error occurred.");
+                    console.log(error);
+                }
+            });
+        });
+
+        //Add
+        $(document).on("click", "addbutton", function () {
+
+            var username = $("#inputUsername").val();
+
+
+            $.ajax({
+                url: "@Url.Action("Profile", "Login")",
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(),
+                success: function (add) {
+                    window.location.href = "/Login/Profile";
+                },
+                error: function (xhr, status, error) {
+                    alert("Unexpected result has occured.");
                     console.log(error);
                 }
             });
