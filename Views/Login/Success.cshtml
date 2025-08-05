@@ -36,50 +36,78 @@
             border-radius: 10px;
             box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
             max-width: 1000px;
-            margin: auto;
-            margin-top: 100px;
+            width: 90%;
+            margin: 40px auto;
         }
 
-        h3 {
+        h2, h3 {
             text-align: center;
-            margin-bottom: 30px;
         }
 
         footer {
-            background-color: floralwhite !important;
+            background-color: floralwhite;
             text-align: start;
             padding: 20px;
-            padding-left: 20px; 
+            padding-left: 20px;
+            font-size: 14px;
+            margin-top: auto;
         }
 
-        .btn-info {
+        #addUser {
             margin-bottom: 15px;
+        }
+
+        #rolepage {
+            margin-bottom: 15px;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <h2 class="text-center mt-4">Login Successfully 🎉🎉</h2>
 
-    @model List<Entities.BaseUser>
+    @model Entities.UserList
 
     <div class="login">
         <h3>User Informations</h3>
 
-        <a href="@Url.Action("Profile", "Login")" class="btn btn-info">+Add User</a>
+        @if (Model.IsAuthority)
+        {
+            <a href="@Url.Action("Profile", "Login")" class="btn btn-info" id="addUser">+Add User</a>
+            <a href="@Url.Action("Roles", "Login")" class="btn btn-success" id="rolepage">User Roles</a>
+        }
+
+        
 
         <table class="table table-bordered mt-3">
+
             <thead>
+                @* @{
+                    var isAuthority = Context.Session.GetString("IsAuthority") == "True";
+                }
+ *@
                 <tr>
                     <th>Id</th>
                     <th>Email</th>
                     <th>Password</th>
                     <th>Username</th>
                     <th>Job</th>
-                    <th>Operation</th>
+                    @if (Model.IsAuthority)
+                    {
+                        <th>Operation</th>
+                    }
                 </tr>
             </thead>
             <tbody>
-                @foreach (var user in Model)
+
+                @{
+                    var roleId = Context.Session.GetInt32("CurrentUserRole");
+                }
+
+               
+
+
+                @foreach (var user in Model.Users)
                 {
                     <tr>
                         <td>@user.Id</td>
@@ -87,10 +115,13 @@
                         <td>@user.password</td>
                         <td>@user.username</td>
                         <td>@user.job</td>
-                        <td>
-                            <a class="btn btn-warning" href="@Url.Action("Profile", "Login", new { Id = user.Id })">Edit</a>
-                            <button type="button" class="btn btn-danger delete-btn" data-userid="@user.Id">Delete</button>
-                        </td>
+                        @if (Model.IsAuthority)
+                        {
+                            <td>
+                                <a class="btn btn-warning" id="submitbuttonn1" href="@Url.Action("Profile", "Login", new { Id = user.Id })">Edit</a>
+                                <button type="button" class="btn btn-danger delete-btn" data-userid="@user.Id">Delete</button>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -150,7 +181,7 @@
         //Add
         $(document).on("click", "addbutton", function () {
 
-            var username = $("#inputUsername").val();
+            // var username = $("#inputUsername").val();
 
 
             $.ajax({
@@ -167,6 +198,26 @@
                 }
             });
         });
+
+        //User Role
+        $(document).on("click", "rolepage", function () {
+
+
+            $.ajax({
+                url: "@Url.Action("Roles", "Login")",
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(),
+                success: function (add) {
+                    window.location.href = "/Login/Roles";
+                },
+                error: function (xhr, status, error) {
+                    alert("Unexpected result has occured.");
+                    console.log(error);
+                }
+            });
+        });
+
     </script>
 </body>
 </html>

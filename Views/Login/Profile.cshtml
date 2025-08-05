@@ -1,20 +1,39 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Entities.UserProfile
 @{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>User Informations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            background-image: url('/img/bg7.jpg');
+            display: flex;
+            flex-direction: column;
+            background-image: url('/img/bgg2.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
-            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        footer {
-            background-color: floralwhite !important;
-            text-align: start;
+        .wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
         }
 
         .login-container {
@@ -23,108 +42,140 @@
             border-radius: 10px;
             box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
             max-width: 500px;
-            margin: auto;
-            margin-top: 100px;
+            width: 90%;
         }
 
-        h3 {
+        h3, h2 {
             text-align: center;
             margin-bottom: 30px;
         }
+
+        footer {
+            background-color: floralwhite !important;
+            text-align: start;
+            padding: 20px;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+
+        #usernamewarning {
+            display: none;
+            color: red;
+            font-size: 1em;
+        }
     </style>
+</head>
+<body>
 
-    @model Entities.BaseUser 
-    <div class="container login-container">
-                            <form>
-                            <h2>My Profile</h2>
-                                <div class="form-row">
-                                    <div class="form-group col-md-10">
-                                        <label for="inputEmail4">Id</label>
-                                        <input type="text" class="form-control" id="IdId" readonly value="@Model.Id">
-                                    </div>
-                                    <div class="form-group col-md-10">
-                                        <label for="inputEmail4">Email</label>
-                                        <input type="email" class="form-control" id="inputEmail4" value="@Model.email">
-                                    </div>
-                                    <div class="form-group col-md-10">
-                                        <label for="inputPassword4">Password</label>
-                                        <input type="password" class="form-control" id="inputPassword4" value="@Model.password">
-                                    </div>
-                                </div>
-                                <div class="form-group col-md-10">
-                                    <label for="inputUsername">Username</label>
-                                <input type="text" class="form-control" id="inputUsername" value="@Model.username">
-                                <span id="usernamewarning" style="display:none; color:red; font-size: 1em;"> Maximum 10 characters!</span>
-                                </div>
-                                <div class="form-group col-md-10">
-                                    <label for="inputUsername">Job</label>
-                                    <input type="text" class="form-control" id="inputJob" placeholder="Your expertise" value="@Model.job" >
-                                </div>
+    <div class="wrapper">
+        <div class="container login-container">
+            <form>
+                <h2>My Profile</h2>
+                <div class="form-row">
+                    <div class="form-group col-md-10">
+                        <label for="IdId">Id</label>
+                        <input type="text" class="form-control" id="IdId" readonly value="@Model.User.Id">
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="inputEmail4">Email</label>
+                        <input type="email" class="form-control" id="inputEmail4" value="@Model.User.email">
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="inputPassword4">Password</label>
+                        <input type="password" class="form-control" id="inputPassword4" value="@Model.User.password">
+                    </div>
+                </div>
+                <div class="form-group col-md-10">
+                    <label for="inputUsername">Username</label>
+                    <input type="text" class="form-control" id="inputUsername" value="@Model.User.username">
+                    <span id="usernamewarning"> Maximum 10 characters!</span>
+                </div>
+                <div class="form-group col-md-10">
+                    <label for="inputJob">Job</label>
+                    <input type="text" class="form-control" id="inputJob" placeholder="Your expertise" value="@Model.User.job">
+                </div>
+                <br />
+                @foreach (var role in Model.RolesSelectListItem)
+                {
+                    bool isChecked = Model.roles.Any(userRole => userRole.Id.ToString() == role.Value);
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="@role.Value" id="role_@role.Value" @(isChecked ? "checked" : "")>
+                        <label class="form-check-label" for="role_@role.Value">
+                            @role.Text
+                        </label>
+                    </div>
+                }
 
-                                <br />
-                                <button type="button" class="btn btn-primary" id="updatebutton">Save</button>
-                            </form>
+                <br />
+                <button type="button" class="btn btn-primary" id="updatebutton">Save</button>
+            </form>
+        </div>
     </div>
 
-}
+    <footer>
+        © 2025 - LoginProject - <a href="#">Privacy</a>
+    </footer>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        //Live Listener for character 10
+        document.getElementById("inputUsername").addEventListener("input", function () {
+            const input = this.value;
+            const errorMsg = document.getElementById("usernamewarning");
+            const updatebutton = document.getElementById("updatebutton")
 
-<script> 
+            if (input.length > 10) {
+                errorMsg.style.display = "inline";
+                updatebutton.disabled = true;
+            } else {
+                errorMsg.style.display = "none";
+                updatebutton.disabled = false;
+            }
+        });
 
-    //Live Listener for character 10
-    document.getElementById("inputUsername").addEventListener("input", function () {
-        const input = this.value;
-        const errorMsg = document.getElementById("usernamewarning");
-        const updatebutton = document.getElementById("updatebutton")
-
-        if (input.length > 10) {
-            errorMsg.style.display = "inline";
-            updatebutton.disabled = true;
-        } else {
-            errorMsg.style.display = "none";
-            updatebutton.disabled = false;
-        }
-    });
-
-    //Update
-
+        //Update
         $("#updatebutton").click(function () {
+            var selectedRoles = [];
+            $("input[type=checkbox]:checked").each(function () {
+                selectedRoles.push(parseInt($(this).val()));
+            });
 
-        var username = $("#inputUsername").val();
+            var username = $("#inputUsername").val();
 
             if (username.length > 10) {
                 $("#usernamewarning").show();
-            }
-            else 
-            {
+                return;
+            } else {
                 $("#usernamewarning").hide();
-            }   
+            }
 
             var updateUser = {
-                Id: $("#IdId").val(),
-                email: $("#inputEmail4").val(),
-                password: $("#inputPassword4").val(),
-                username: $("#inputUsername").val(),
-                job: $("#inputJob").val()
+                User: {
+                    Id: $("#IdId").val(),
+                    email: $("#inputEmail4").val(),
+                    password: $("#inputPassword4").val(),
+                    username: $("#inputUsername").val(),
+                    job: $("#inputJob").val(),
+                },
+                SelectedRoleIds: selectedRoles
             };
 
-        debugger;
             $.ajax({
                 url: "@Url.Action("Profile", "Login")",
                 type: "Post",
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(updateUser),
-                success: function (update) {
+                success: function () {
                     window.location.href = "/Login/Success";
-                }, 
+                },
                 error: function (xhr, status, error) {
                     alert("Unexpected result has occured.");
                     console.log(error);
                 }
             });
-    
-    });
 
-</script>
+        });
+    </script>
+</body>
+</html>
