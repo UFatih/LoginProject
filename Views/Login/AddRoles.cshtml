@@ -1,6 +1,7 @@
 ﻿@model Entities.UserRole
 @{
     Layout = null;
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <!DOCTYPE html>
@@ -87,6 +88,11 @@
                     <input type="hidden" name="ischecked" value="false" />
                     <input type="checkbox" class="form-check-input" id="flexCheckDefault" name="ischecked" value="true" @(Model.ischecked ? "checked" : "") />
                     <label class="form-check-label" for="flexCheckDefault">Having authority</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="hidden" name="ischecked" value="false" />
+                    <input type="checkbox" class="form-check-input" id="flexCheckDefault" name="ischecked" value="true" @(Model.islogloginchecked ? "checked" : "") />
+                    <label class="form-check-label" for="flexCheckDefault">Login Log Page authority</label>
                 </div>
 
                 <div class="d-grid">
