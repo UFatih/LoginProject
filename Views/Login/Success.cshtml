@@ -75,22 +75,32 @@
             margin-left: 10px;
         }
 
+        #excel {
+            margin-bottom: 2px;
+            margin-left: 10px;
+        }
+
     </style>
 </head>
 <body>
-    <h2 class="text-center mt-4">Login Successfully 🎉🎉</h2>
+    <h2>Login Successfully 🎉🎉</h2>
+    <br/>
 
     @model Entities.UserList
 
     <div class="login">
-        <h3>User Informations</h3>
 
+        <div class="pb-4">
+            <h3>User Informations</h3>
+        </div>
+        
         @if (Model.IsAuthority)
         {
             <a href="@Url.Action("Profile", "Login")" class="btn btn-info" id="addUser">+Add User</a>
-            <a href="@Url.Action("Roles", "Login")" class="btn btn-success" id="rolepage">User Roles</a>
-            
+            <a href="@Url.Action("Roles", "Login")" class="btn btn-primary" id="rolepage">User Roles</a>
+            <a href="@Url.Action("UsersExcel","Login")" class="btn btn-success" id="excel">Excel</a>
         }
+       
         @if (Model.IsLogLogin)
         {
             <a href="@Url.Action("LoginLogs", "Login")" class="btn btn-secondary" id="loginlogbtn">Login Logs</a>
@@ -113,6 +123,7 @@
                     {
                         <th>Operation</th>
                     }
+                    <th>Mail</th>
                 </tr>
             </thead>
             <tbody>
@@ -137,6 +148,9 @@
                                 <button type="button" class="btn btn-danger delete-btn" data-userid="@user.Id">Delete</button>
                             </td>
                         }
+                        <td>
+                            <button onclick="sendmailuser(@user.Id)" class="btn btn-light">Send Mail</button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -151,6 +165,23 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+
+
+        //Send Mail
+        function sendmailuser(userId) {
+            $.ajax({
+                url: '@Url.Action("SendMail", "Mail")',
+                type: 'POST',
+                data: { id: userId }, 
+                success: function () {
+                    alert("User information has been sent to your mail!"); 
+                },
+                error: function (xhr, status, error) {
+                    alert("Failed to send mail."); 
+                    console.error(error);
+                }
+            });
+        }
 
         //Edit
         $(document).on("click", "submitbuttonn1", function () {

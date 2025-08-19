@@ -5,6 +5,8 @@ using LoginProject.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Reflection.Metadata.Ecma335;
+using ClosedXML.Excel;
+
 
 
 namespace LoginProject.Controllers
@@ -17,6 +19,7 @@ namespace LoginProject.Controllers
         {
             _userService = userService;
         }
+
 
         [HttpGet]
         public IActionResult Success()
@@ -37,8 +40,6 @@ namespace LoginProject.Controllers
             model.IsLogLogin = roles.Where(x => x.Id == roleId).Any(x => x.islogloginchecked);
 
             return View(model);
-
-
         }
 
 
@@ -48,6 +49,78 @@ namespace LoginProject.Controllers
             _userService.UserDelete(Id);
             return Ok("User has been deleted.");
         }
+
+
+        [HttpGet] //Excel for Users
+        public IActionResult UsersExcel()
+        {
+            var users = _userService.GetAllUsers();
+
+            var dtEmails = new DataTable("UsersEmailByUsername");
+
+            var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var u in users)
+            {
+                var colName = string.IsNullOrWhiteSpace(u.username) ? "Unnamed" : u.username.Trim();
+                if (!used.Add(colName))
+                {
+                    int i = 2;
+                    while (!used.Add($"{colName}_{i}")) i++;
+                    colName = $"{colName}_{i}";
+                }
+                dtEmails.Columns.Add(colName);
+            }
+
+            //Adding Email
+            var emailsRow = dtEmails.NewRow();
+            int colIndex = 0;
+            foreach (var u in users)
+            {
+                emailsRow[colIndex++] = u.email;
+            }
+            dtEmails.Rows.Add(emailsRow);
+
+            // Password & Job, 2. Page
+            var dtPassJob = new DataTable("PasswordAndJob");
+            dtPassJob.Columns.Add("Username");
+            dtPassJob.Columns.Add("Password");
+            dtPassJob.Columns.Add("Job");
+
+            foreach (var u in users)
+            {
+                dtPassJob.Rows.Add(
+                    string.IsNullOrWhiteSpace(u.username) ? "Unnamed" : u.username.Trim(),
+                    u.password,
+                    u.job
+                );
+            }
+
+
+            using var wb = new XLWorkbook();
+
+            // Sayfa 1 - Email
+            var ws1 = wb.Worksheets.Add("Users");
+            ws1.Cell(1, 1).InsertTable(dtEmails, true);
+            ws1.Columns().AdjustToContents();
+            ws1.Rows().AdjustToContents();
+
+            // Sayfa 2 - Password + Job
+            var ws2 = wb.Worksheets.Add("Users2");
+            ws2.Cell(1, 1).InsertTable(dtPassJob, true);
+            ws2.Columns().AdjustToContents();
+            ws2.Rows().AdjustToContents();
+
+            using var ms = new MemoryStream();
+            wb.SaveAs(ms);
+            var bytes = ms.ToArray();
+
+            return File(
+                bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Users.xlsx"
+            );
+        }
+
 
 
         [HttpGet]
@@ -276,41 +349,6 @@ namespace LoginProject.Controllers
 
             return View(filtered);
         }
-
-
-        //[HttpGet] //Filter Log
-        //public IActionResult LoginLogs(LoginLogFilterViewModel filtered)
-        //{
-
-        //    var roleId = HttpContext.Session.GetInt32("RoleId");
-        //    if (roleId != 1)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    if (!filtered.StartDate.HasValue)
-        //    {
-        //        filtered.StartDate = DateTime.Now.AddDays(-14);
-        //    }
-
-
-        //    if (!filtered.EndDate.HasValue)
-        //    {
-        //        filtered.EndDate = DateTime.Now;
-        //    }
-
-        //    var urLogs = _userService.GetLoginLogs(
-        //        filtered.UserName,
-        //        filtered.IPAddress,
-        //        filtered.StartDate,
-        //        filtered.EndDate,
-        //        filtered.BrowserInfo
-        //         );
-
-        //    filtered.Results = urLogs;
-        //    return View(filtered);
-
-        //}
 
 
         public IActionResult Logout()
