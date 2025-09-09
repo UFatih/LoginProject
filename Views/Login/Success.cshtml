@@ -1,9 +1,10 @@
-﻿@*
+﻿@using Business.Helpers
+@*
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    Layout = null;  
-    Layout = "~/Views/Shared/_Layout.cshtml"; 
+    Layout = null;
+    Layout = "~/Views/Shared/_Layout.cshtml";
 
 }
 
@@ -12,7 +13,7 @@
 <head>
     <meta charset="utf-8" />
     <title>User Informations</title>
-   
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <style>
@@ -36,15 +37,18 @@
             flex: 1;
             background-color: whitesmoke;
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
-            max-width: 1000px;
-            width: 90%;
+            border-radius: 12px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 1100px;
+            width: 95%;
             margin: 40px auto;
+            overflow-x: auto;
         }
 
         h2, h3 {
             text-align: center;
+            font-weight: 600;
+            color: #333;
         }
 
         footer {
@@ -56,106 +60,198 @@
             margin-top: auto;
         }
 
-        #addUser {
-            margin-bottom: 2px;
+        .btn {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
         }
 
-        #rolepage {
-            margin-bottom: 2px;
-            margin-left: 10px;
+        .action-buttons a,
+        .action-buttons button {
+            margin-bottom: 6px;
+            margin-right: 8px;
         }
 
-        #logoutbtn{
-            margin-bottom: 10px;
-            
+        .table td, .table th {
+            vertical-align: middle;
+            white-space: nowrap;
         }
 
-        #loginlogbtn{
-            margin-bottom: 2px;
-            margin-left: 10px;
+        .table-responsive {
+            margin-top: 20px;
         }
-
-        #excel {
-            margin-bottom: 2px;
-            margin-left: 10px;
-        }
-
     </style>
 </head>
 <body>
-    <h2>Login Successfully 🎉🎉</h2>
-    <br/>
+    <h2>@LocalizationCache.Get("Login Successfully 🎉🎉")</h2>
+    <br />
 
     @model Entities.UserList
+
+    @{
+        var lang = Context.Session.GetString("Language");
+    }
+
+
+    
+@*  //Old flag code 
+    <div class="d-flex justify-content-end mb-3">
+        <form id="languageForm" asp-controller="Login" asp-action="ChangeLanguage" method="post">
+            <select id="languageDropdown" name="language" class="form-select" style="width: 150px;">
+
+                <option disabled selected style="color: gray;">Language</option>
+                <option value="tr" selected="@(Context.Session.GetString("Language") == "tr")">Türkçe</option>
+
+                <option value="en" selected="@(Context.Session.GetString("Language") == "en")">English</option>
+
+                <option value="de" selected="@(Context.Session.GetString("Language") == "de")">Deutsch</option>
+
+            </select>
+        </form>
+    </div>
+ *@
+
+    @{
+        var currentLanguage = Context.Session.GetString("Language") ?? "tr";
+    }
+
+    <div class="d-flex justify-content-end mb-3">
+        <div class="dropdown">
+            <!-- Shows chosen button -->
+            <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                @if (currentLanguage == "tr")
+                {
+                <img src="/img/turkish_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                   <div>
+                       Türkçe
+                   </div> 
+                    }
+                else if (currentLanguage == "en")
+                {
+                <img src="/img/usa_eng_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        English
+                    </div>  
+                    }
+                else if (currentLanguage == "de")
+                {
+                <img src="/img/german_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        Deutsch
+                    </div> 
+                    }
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                <!-- Türkçe -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="tr" class="dropdown-item d-flex align-items-center">
+                            <img src="/img/turkish_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            Türkçe
+                        </button>
+                    </form>
+                </li>
+                <!-- English -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="en" class="dropdown-item d-flex align-items-center">
+                            <img src="/img//usa_eng_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            English
+                        </button>
+                    </form>
+                </li>
+                <!-- Deutsch -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="de" class="dropdown-item d-flex align-items-center">
+                            <img src="/img/german_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            Deutsch
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
 
     <div class="login">
 
         <div class="pb-4">
-            <h3>User Informations</h3>
+            <h3>@LocalizationCache.Get("User Informations")</h3>
         </div>
-        
-        @if (Model.IsAuthority)
-        {
-            <a href="@Url.Action("Profile", "Login")" class="btn btn-info" id="addUser">+Add User</a>
-            <a href="@Url.Action("Roles", "Login")" class="btn btn-primary" id="rolepage">User Roles</a>
-            <a href="@Url.Action("UsersExcel","Login")" class="btn btn-success" id="excel">Excel</a>
-        }
-       
-        @if (Model.IsLogLogin)
-        {
-            <a href="@Url.Action("LoginLogs", "Login")" class="btn btn-secondary" id="loginlogbtn">Login Logs</a>
-        }
-        <table class="table table-bordered mt-3">
 
-            <thead>
-                @* @{
+        <div class="action-buttons">
+            @if (Model.IsAuthority)
+            {
+                <a href="@Url.Action("Profile", "Login")" class="btn btn-info" id="addUser">@LocalizationCache.Get("+Add User")</a>
+                <a href="@Url.Action("Roles", "Login")" class="btn btn-primary" id="rolepage">@LocalizationCache.Get("User Roles")</a>
+                <a href="@Url.Action("UsersExcel","Login")" class="btn btn-success" id="excel">@LocalizationCache.Get("Excel")</a>
+            }
+
+            @if (Model.IsLogLogin)
+            {
+                <a href="@Url.Action("LoginLogs", "Login")" class="btn btn-secondary" id="loginlogbtn">@LocalizationCache.Get("Login Logs")</a>
+            }
+        </div>
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-striped align-middle">
+
+                <thead class="table-light">
+                    @* @{
                     var isAuthority = Context.Session.GetString("IsAuthority") == "True";
-                }
-                *@
-
-                <tr>
-                    <th>Id</th>
-                    <th>Email</th>
-                    <th>Password</th>
-                    <th>Username</th>
-                    <th>Job</th>
-                    @if (Model.IsAuthority)
-                    {
-                        <th>Operation</th>
                     }
-                    <th>Mail</th>
-                </tr>
-            </thead>
-            <tbody>
+                    *@
 
-                @{
-                    var roleId = Context.Session.GetInt32("CurrentUserRole");
-                }
-
-               
-                @foreach (var user in Model.Users)
-                {
                     <tr>
-                        <td>@user.Id</td>
-                        <td>@user.email</td>
-                        <td>@user.password</td>
-                        <td>@user.username</td>
-                        <td>@user.job</td>
+                        <th>Id</th>
+                        <th>@LocalizationCache.Get("Email")</th>
+                        <th>@LocalizationCache.Get("Password")</th>
+                        <th>@LocalizationCache.Get("Username")</th>
+                        <th>@LocalizationCache.Get("Job")</th>
                         @if (Model.IsAuthority)
                         {
-                            <td>
-                                <a class="btn btn-warning" id="submitbuttonn1" href="@Url.Action("Profile", "Login", new { Id = user.Id })">Edit</a>
-                                <button type="button" class="btn btn-danger delete-btn" data-userid="@user.Id">Delete</button>
-                            </td>
+                            <th>@LocalizationCache.Get("Operation")</th>
                         }
-                        <td>
-                            <button onclick="sendmailuser(@user.Id)" class="btn btn-light">Send Mail</button>
-                        </td>
+                        <th>@LocalizationCache.Get("Mail")</th>
+                        <th>@LocalizationCache.Get("Password Change")</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-        <a href="@Url.Action("Logout", "Login")" class="btn btn-dark" id="logoutbtn">Log out</a>
+                </thead>
+                <tbody>
+
+                    @{
+                        var roleId = Context.Session.GetInt32("CurrentUserRole");
+                    }
+
+
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@user.Id</td>
+                            <td>@user.email</td>
+                            <td>@user.password</td>
+                            <td>@user.username</td>
+                            <td>@user.job</td>
+                            @if (Model.IsAuthority)
+                            {
+                                <td>
+                                    <a class="btn btn-warning" id="submitbuttonn1" href="@Url.Action("Profile", "Login", new { Id = user.Id })">@LocalizationCache.Get("Edit")</a>
+                                    <button type="button" class="btn btn-danger delete-btn" data-userid="@user.Id">@LocalizationCache.Get("Delete")</button>
+                                </td>
+                            }
+                            <td>
+                                <button onclick="sendmailuser(@user.Id)" class="btn btn-light">@LocalizationCache.Get("Send Mail")</button>
+                            </td>
+                            <td>
+                                <button onclick="iforgotpassword(@user.Id)" class="btn btn-outline-dark">@LocalizationCache.Get("Forgot Password")</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <a href="@Url.Action("Logout", "Login")" class="btn btn-dark mt-4" id="logoutbtn">@LocalizationCache.Get("Log out")</a>
     </div>
 
     <footer>
@@ -166,18 +262,50 @@
 
     <script>
 
+        // Language switch
+        $('#languageDropdown').change(function () {
+            var selectedLanguage = $(this).val();
+
+            $.ajax({
+                url: '@Url.Action("ChangeLanguage", "Login")',
+                type: 'POST',
+                data: { language: selectedLanguage },
+                success: function () {
+                    location.reload();
+                },
+                error: function () {
+                    alert('Language change failed.');
+                }
+            });
+        });
+
+        //Forgot Password
+        function iforgotpassword(userIdd) {
+            $.ajax({
+                url: '@Url.Action("ForgotPasswordLink", "Mail")',
+                type: 'POST',
+                data: { id: userIdd },
+                success: function () {
+                    alert("Check out your email for link");
+                },
+                error: function (xhr, status, error) {
+                    alert("Failed to send mail.");
+                    console.error(error);
+                }
+            });
+        }
 
         //Send Mail
         function sendmailuser(userId) {
             $.ajax({
                 url: '@Url.Action("SendMail", "Mail")',
                 type: 'POST',
-                data: { id: userId }, 
+                data: { id: userId },
                 success: function () {
-                    alert("User information has been sent to your mail!"); 
+                    alert("User information has been sent to your mail!");
                 },
                 error: function (xhr, status, error) {
-                    alert("Failed to send mail."); 
+                    alert("Failed to send mail.");
                     console.error(error);
                 }
             });

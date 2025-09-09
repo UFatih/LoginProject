@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Reflection.Metadata.Ecma335;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Security.Cryptography;
+using DocumentFormat.OpenXml.Spreadsheet;
+using BCrypt.Net;
+
 
 
 
@@ -14,10 +19,14 @@ namespace LoginProject.Controllers
     public class LoginController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IMailService _mailService;
+        private readonly ILocalizationService _localizationService;
 
-        public LoginController(IUserService userService)
+        public LoginController(IUserService userService, IMailService mailService, ILocalizationService localizationService)
         {
             _userService = userService;
+            _mailService = mailService;
+            _localizationService = localizationService;
         }
 
 
@@ -49,6 +58,84 @@ namespace LoginProject.Controllers
             _userService.UserDelete(Id);
             return Ok("User has been deleted.");
         }
+
+
+        [HttpGet]
+        public IActionResult ResetPassword(int id, string token)
+        {
+            var userPassReset = _mailService.GetUserByIdd(id);
+            if (userPassReset == null || userPassReset.PasswordResetToken != token || userPassReset.PasswordResetTokenExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest("Invalid or expired link");
+                
+            }
+            return View(new ResetPasswordViewModel { Id = id, Token = token });
+           
+        }
+
+        [HttpPost]
+        public IActionResult ResetPassword([FromBody] ResetPasswordViewModel modelPass)
+        {
+
+            if (string.IsNullOrEmpty(modelPass.NewPassword) || string.IsNullOrEmpty(modelPass.ConfirmPassword))
+            {  // ModelState ->> Structure that maintains the accuracy and validity of the data coming from the form.
+                ModelState.AddModelError("", "Passwords cannot be empty!");
+                return View(modelPass);
+            }
+
+            var userPass = _userService.GetUserById(modelPass.Id);
+            if (string.IsNullOrEmpty(userPass.PasswordResetToken) || userPass.PasswordResetToken != modelPass.Token)
+            {
+                return BadRequest("Invalid token");
+            }
+
+
+            userPass.password = BCrypt.Net.BCrypt.HashPassword(modelPass.NewPassword);
+            userPass.PasswordResetToken = null;
+            userPass.PasswordResetTokenExpiresAt = null;
+
+            _userService.UserUpdate(userPass);
+
+            TempData["Success"] = "Password has been successfully updated!";
+            return RedirectToAction("Loginn", "Login");
+
+
+            //1)
+
+            //if (userPass == null)
+            //{
+            //    return BadRequest("User not found");
+            //}
+
+            //if (userPass.PasswordResetToken != modelPass.Token)
+            //{
+            //    return BadRequest($"Token mismatch: Expected {userPass.PasswordResetToken}, Got {modelPass.Token}");
+            //}
+
+            //if (userPass.PasswordResetTokenExpiresAt < DateTime.UtcNow)
+            //{
+            //    return BadRequest("Token expired");
+            //}
+
+
+            //2)
+
+            //if (userPass == null || userPass.PasswordResetToken != modelPass.Token || userPass.PasswordResetTokenExpiresAt < DateTime.UtcNow)
+            //{
+            //    return BadRequest("Invalid or expired link");
+            //}
+
+        }
+
+
+        [HttpPost]
+        public IActionResult ChangeLanguage(string language)
+        {
+            _localizationService.Load(language);
+            HttpContext.Session.SetString("Language", language);
+            return RedirectToAction("Success");
+        }
+
 
 
         [HttpGet] //Excel for Users
@@ -122,7 +209,6 @@ namespace LoginProject.Controllers
         }
 
 
-
         [HttpGet]
         public IActionResult Error()
         {
@@ -132,58 +218,127 @@ namespace LoginProject.Controllers
 
         [HttpGet]
         public IActionResult Loginn()
-        {
+        {           
+            string tr = "tr";
+            ChangeLanguage(tr);
             return View();
         }
-
 
         [HttpPost]
         public IActionResult Loginn([FromBody] UserProfile entity)
         {
-
             HttpContext.Session.SetString("IsLoggedIn", "true");
 
             var user = _userService.GetAllUsers()
-                .FirstOrDefault(u => u.email == entity.User.email && u.password == entity.User.password);
+                .FirstOrDefault(u => u.email == entity.User.email);
 
-            if (user != null)
+            if (user != null) 
             {
-                HttpContext.Session.SetInt32("CurrentUser", user.Id);
+                bool isPasswordValid = false;
 
-                var roles = _userService.GetUserRolesByUserId(user.Id);
-                var isAdmin = roles.Any(r => r.ischecked);
-
-                HttpContext.Session.SetString("IsAuthority", isAdmin ? "true" : "false");
-
-                var firstRole = roles.FirstOrDefault();
-                if (firstRole != null)
+                if (!user.password.StartsWith("$2a$") && !user.password.StartsWith("$2b$"))
                 {
-                    HttpContext.Session.SetInt32("RoleId", firstRole.Id);
+
+                    if (user.password == entity.User.password)
+                    {
+                        isPasswordValid = true;
+
+                        user.password = BCrypt.Net.BCrypt.HashPassword(entity.User.password);
+                        _userService.UserUpdate(user);
+                    }
+                }
+                else
+                {
+                    if (BCrypt.Net.BCrypt.Verify(entity.User.password, user.password))
+                    {
+                        isPasswordValid = true;
+                    }
                 }
 
-                string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-                if (ipAddress == "::1") //localhost
+                if (isPasswordValid) //The flag(isPasswordValid) is used to determine whether the password is correct and to log the user in if so.
                 {
-                    ipAddress = "192.168.1.16";
+                    HttpContext.Session.SetInt32("CurrentUser", user.Id);
+
+                    var roles = _userService.GetUserRolesByUserId(user.Id);
+                    var isAdmin = roles.Any(r => r.ischecked);
+                    HttpContext.Session.SetString("IsAuthority", isAdmin ? "true" : "false");
+
+                    var firstRole = roles.FirstOrDefault();
+                    if (firstRole != null)
+                    {
+                        HttpContext.Session.SetInt32("RoleId", firstRole.Id);
+                    }
+
+                    string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                    if (ipAddress == "::1") ipAddress = "192.168.1.16";
+
+                    var loglogin = new UserLoginLog
+                    {
+                        UserId = user.Id,
+                        UserName = user.username,
+                        IPAddress = ipAddress,
+                        LoginDate = DateTime.Now,
+                        BrowserInfo = Request.Headers["User-Agent"].ToString()
+                    };
+                    _userService.AddUserLoginLog(loglogin);
+
+                    return Json(true);
                 }
-                var loglogin = new UserLoginLog
-                {
-                    UserId = user.Id,
-                    UserName = user.username,
-                    IPAddress = ipAddress,
-                    LoginDate = DateTime.Now,
-                    BrowserInfo = Request.Headers["User-Agent"].ToString()
-                };
-                _userService.AddUserLoginLog(loglogin);
-
-
-
-                return Json(true);
             }
 
             return Json(false);
         }
+
+
+        //[HttpPost]
+        //public IActionResult Loginn([FromBody] UserProfile entity)
+        //{
+
+        //    HttpContext.Session.SetString("IsLoggedIn", "true");
+
+        //    //var user = _userService.GetAllUsers()
+        //    //   .FirstOrDefault(u => u.email == entity.User.email && u.password == entity.User.password);
+
+        //    var user = _userService.GetAllUsers()
+        //        .FirstOrDefault(u => u.email == entity.User.email);
+
+        //    //&& BCrypt.Net.BCrypt.Verify(entity.User.password, user.password)
+        //    if (user != null && BCrypt.Net.BCrypt.Verify(entity.User.password, user.password)) // Şifreleri manuel değil hashli eklemek gerek
+        //    {
+        //        HttpContext.Session.SetInt32("CurrentUser", user.Id);
+
+        //        var roles = _userService.GetUserRolesByUserId(user.Id);
+        //        var isAdmin = roles.Any(r => r.ischecked);
+
+        //        HttpContext.Session.SetString("IsAuthority", isAdmin ? "true" : "false");
+
+        //        var firstRole = roles.FirstOrDefault();
+        //        if (firstRole != null)
+        //        {
+        //            HttpContext.Session.SetInt32("RoleId", firstRole.Id);
+        //        }
+
+        //        string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        //        if (ipAddress == "::1") //localhost
+        //        {
+        //            ipAddress = "192.168.1.16";
+        //        }
+        //        var loglogin = new UserLoginLog
+        //        {
+        //            UserId = user.Id,
+        //            UserName = user.username,
+        //            IPAddress = ipAddress,
+        //            LoginDate = DateTime.Now,
+        //            BrowserInfo = Request.Headers["User-Agent"].ToString()
+        //        };
+        //        _userService.AddUserLoginLog(loglogin);
+
+        //        return Json(true);
+        //    }
+
+        //    return Json(false);
+        //}
 
 
 
