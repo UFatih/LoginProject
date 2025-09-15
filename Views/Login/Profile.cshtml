@@ -1,4 +1,5 @@
-﻿@model Entities.UserProfile
+﻿@using Business.Helpers
+@model Entities.UserProfile
 @{
     Layout = null;
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -10,6 +11,8 @@
     <meta charset="utf-8" />
     <title>User Informations</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
 
     <style>
         html, body {
@@ -68,32 +71,107 @@
 </head>
 <body>
 
+    
+    @{
+        var currentLanguage = Context.Session.GetString("Language") ?? "tr";
+    }
+
+    <div class="d-flex justify-content-end mb-3">
+        <div class="dropdown">
+            <!-- Shows chosen button -->
+            <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                @if (currentLanguage == "tr")
+                {
+                    <img src="/img/turkish_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        Türkçe
+                    </div>
+                }
+                else if (currentLanguage == "en")
+                {
+                    <img src="/img/usa_eng_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        English
+                    </div>
+                }
+                else if (currentLanguage == "de")
+                {
+                    <img src="/img/german_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        Deutsch
+                    </div>
+                }
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                <!-- Türkçe -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="tr" class="dropdown-item d-flex align-items-center">
+                            <img src="/img/turkish_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            Türkçe
+                        </button>
+                    </form>
+                </li>
+                <!-- English -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="en" class="dropdown-item d-flex align-items-center">
+                            <img src="/img//usa_eng_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            English
+                        </button>
+                    </form>
+                </li>
+                <!-- Deutsch -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="de" class="dropdown-item d-flex align-items-center">
+                            <img src="/img/german_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            Deutsch
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+
     <div class="wrapper">
         <div class="container login-container">
             <form>
-                <h2>My Profile</h2>
+                <h2>
+                    <i class="bi bi-person-circle me-2"></i>
+                    @LocalizationCache.Get("My Profile")
+                </h2>
                 <div class="form-row">
                     <div class="form-group col-md-10">
                         <label for="IdId">Id</label>
                         <input type="text" class="form-control" id="IdId" readonly value="@Model.User.Id">
                     </div>
                     <div class="form-group col-md-10">
-                        <label for="inputEmail4">Email</label>
+                        <label for="inputEmail4">@LocalizationCache.Get("Email")</label>
                         <input type="email" class="form-control" id="inputEmail4" value="@Model.User.email">
                     </div>
                     <div class="form-group col-md-10">
-                        <label for="inputPassword4">Password</label>
-                        <input type="password" class="form-control" id="inputPassword4" value="@Model.User.password">
+                        <label for="inputPassword4">@LocalizationCache.Get("Password")</label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control" id="inputPassword4" value="@Model.User.password">
+                            <i class="bi bi-eye-fill fs-4" id="togglePassword"
+                               style="cursor:pointer; position:absolute; right:10px; top:50%; transform:translateY(-50%);">
+                            </i>
+                        </div>
                     </div>
+
                 </div>
                 <div class="form-group col-md-10">
-                    <label for="inputUsername">Username</label>
-                    <input type="text" class="form-control" id="inputUsername" value="@Model.User.username">
-                    <span id="usernamewarning"> Maximum 10 characters!</span>
+                    <label for="inputUsername">@LocalizationCache.Get("Username")</label>
+                    <input type="text" class="form-control" id="inputUsername" value="@Model.User.username">                  
+                    <span id="usernamewarning">@LocalizationCache.Get("Maximum 10 characters!")</span>
                 </div>
                 <div class="form-group col-md-10">
-                    <label for="inputJob">Job</label>
-                    <input type="text" class="form-control" id="inputJob" placeholder="Your expertise" value="@Model.User.job">
+                    <label for="inputJob">@LocalizationCache.Get("Job")</label>
+                    <input type="text" class="form-control" id="inputJob" placeholder="@LocalizationCache.Get("JobPlaceholder")" value="@Model.User.job">
                 </div>
                 <br />
                 @foreach (var role in Model.RolesSelectListItem)
@@ -108,18 +186,48 @@
                 }
 
                 <br />
-                <button type="button" class="btn btn-primary" id="updatebutton">Save</button>
+                <button type="button" class="btn btn-primary" id="updatebutton">@LocalizationCache.Get("Save")</button>
             </form>
         </div>
     </div>
 
     <footer>
-        © 2025 - LoginProject - <a href="#">Privacy</a>
+        © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+
+        // Toggle eye button for password visibility
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#inputPassword4');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            this.classList.toggle('bi-eye-fill');
+            this.classList.toggle('bi-eye-slash-fill');
+        });
+
+        // Language switch
+        $('#languageDropdown').change(function () {
+            var selectedLanguage = $(this).val();
+
+            $.ajax({
+                url: '@Url.Action("ChangeLanguage", "Login")',
+                type: 'POST',
+                data: { language: selectedLanguage },
+                success: function () {
+                    location.reload();
+                },
+                error: function () {
+                    alert('Language change failed.');
+                }
+            });
+        });
+
         //Live Listener for character 10
         document.getElementById("inputUsername").addEventListener("input", function () {
             const input = this.value;

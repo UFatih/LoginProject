@@ -111,6 +111,7 @@
     </div>
  *@
 
+    
     @{
         var currentLanguage = Context.Session.GetString("Language") ?? "tr";
     }
@@ -175,6 +176,7 @@
     </div>
 
 
+
     <div class="login">
 
         <div class="pb-4">
@@ -187,6 +189,8 @@
                 <a href="@Url.Action("Profile", "Login")" class="btn btn-info" id="addUser">@LocalizationCache.Get("+Add User")</a>
                 <a href="@Url.Action("Roles", "Login")" class="btn btn-primary" id="rolepage">@LocalizationCache.Get("User Roles")</a>
                 <a href="@Url.Action("UsersExcel","Login")" class="btn btn-success" id="excel">@LocalizationCache.Get("Excel")</a>
+                <a href="@Url.Action("UsersPdf","Login")" class="btn btn-danger" id="pdf">PDF</a>
+
             }
 
             @if (Model.IsLogLogin)
@@ -255,7 +259,7 @@
     </div>
 
     <footer>
-        © 2025 - LoginProject - <a href="#">Privacy</a>
+        © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

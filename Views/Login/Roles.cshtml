@@ -1,4 +1,5 @@
-﻿@model List<Entities.UserRole>
+﻿@using Business.Helpers
+@model List<Entities.UserRole>
 @{
     Layout = null;
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -68,19 +69,83 @@
 </head>
 <body>
 
-    <div class="container container-box">
-        <h2>Role Informations</h2>
+    @{
+        var currentLanguage = Context.Session.GetString("Language") ?? "tr";
+    }
 
-        <a href="@Url.Action("AddRoles", "Login")" class="btn btn-success" id="Roleadd">+Add New Role</a>
+    <div class="d-flex justify-content-end mb-3">
+        <div class="dropdown">
+            <!-- Shows chosen button -->
+            <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                @if (currentLanguage == "tr")
+                {
+                    <img src="/img/turkish_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        Türkçe
+                    </div>
+                }
+                else if (currentLanguage == "en")
+                {
+                    <img src="/img/usa_eng_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        English
+                    </div>
+                }
+                else if (currentLanguage == "de")
+                {
+                    <img src="/img/german_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                    <div>
+                        Deutsch
+                    </div>
+                }
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                <!-- Türkçe -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="tr" class="dropdown-item d-flex align-items-center">
+                            <img src="/img/turkish_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            Türkçe
+                        </button>
+                    </form>
+                </li>
+                <!-- English -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="en" class="dropdown-item d-flex align-items-center">
+                            <img src="/img//usa_eng_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            English
+                        </button>
+                    </form>
+                </li>
+                <!-- Deutsch -->
+                <li>
+                    <form method="post" asp-controller="Login" asp-action="ChangeLanguage">
+                        <button type="submit" name="language" value="de" class="dropdown-item d-flex align-items-center">
+                            <img src="/img/german_flag.jpg" style="width:30px; height:20px; margin-right:5px;" />
+                            Deutsch
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div class="container container-box">
+        <h2>@LocalizationCache.Get("Role Informations")</h2>
+
+        <a href="@Url.Action("AddRoles", "Login")" class="btn btn-success" id="Roleadd">@LocalizationCache.Get("+Add New Role")</a>
 
         <div class="table-responsive mt-4">
             <table class="table table-bordered table-hover">
                 <thead class="table-light">
                     <tr>
                         <th>Id</th>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Operation</th>
+                        <th>@LocalizationCache.Get("Name")</th>
+                        <th>@LocalizationCache.Get("Description")</th>
+                        <th>@LocalizationCache.Get("Operation")</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,10 +154,10 @@
                         <tr>
                             <td>@user.Id</td>
                             <td>@user.name</td>
-                            <td>@user.description</td>
+                            <td>@LocalizationCache.Get(user.description)</td>
                             <td>
-                                <a class="btn btn-warning" id="submitbuttonn1" href="@Url.Action("AddRoles", "Login", new { Id = user.Id })">Edit</a>
-                                <button type="button" class="btn btn-danger delete-btn m-1" data-userid="@user.Id">Delete</button>
+                                <a class="btn btn-warning" id="submitbuttonn1" href="@Url.Action("AddRoles", "Login", new { Id = user.Id })">@LocalizationCache.Get("Edit")</a>
+                                <button type="button" class="btn btn-danger delete-btn m-1" data-userid="@user.Id">@LocalizationCache.Get("Delete")</button>
                             </td>
                         </tr>
                     }
@@ -102,12 +167,29 @@
     </div>
 
     <footer>
-        © 2025 - LoginProject - <a href="#" class="text-decoration-none">Privacy</a>
+        © 2025 - LoginProject - <a href="#" class="text-decoration-none">@LocalizationCache.Get("Privacy")</a>
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+
+        // Language switch
+        $('#languageDropdown').change(function () {
+            var selectedLanguage = $(this).val();
+
+            $.ajax({
+                url: '@Url.Action("ChangeLanguage", "Login")',
+                type: 'POST',
+                data: { language: selectedLanguage },
+                success: function () {
+                    location.reload();
+                },
+                error: function () {
+                    alert('Language change failed.');
+                }
+            });
+        });
 
         //Edit
         $(document).on("click", "submitbuttonn1", function () {
