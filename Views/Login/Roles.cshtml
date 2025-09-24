@@ -11,6 +11,7 @@
     <meta charset="utf-8" />
     <title>Role Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <style>
         html, body {
@@ -57,14 +58,14 @@
             text-align: center;
         }
 
-        footer {
+      /*   footer {
             background-color: floralwhite;
             text-align: start;
             padding: 20px;
             padding-left: 20px;
             font-size: 14px;
             margin-top: auto;
-        }
+        } */
     </style>
 </head>
 <body>
@@ -136,15 +137,18 @@
     <div class="container container-box">
         <h2>@LocalizationCache.Get("Role Informations")</h2>
 
-        <a href="@Url.Action("AddRoles", "Login")" class="btn btn-success" id="Roleadd">@LocalizationCache.Get("+Add New Role")</a>
+        <a href="@Url.Action("AddRoles", "Login")" class="btn btn-success" id="Roleadd">
+            <i class="bi bi-award-fill me-1"></i> @LocalizationCache.Get("+Add New Role")
+        </a>
+
 
         <div class="table-responsive mt-4">
             <table class="table table-bordered table-hover">
                 <thead class="table-light">
                     <tr>
                         <th>Id</th>
-                        <th>@LocalizationCache.Get("Name")</th>
-                        <th>@LocalizationCache.Get("Description")</th>
+                        <th>@LocalizationCache.Get("Role Name")</th>
+                        <th>@LocalizationCache.Get("Role Description")</th>
                         <th>@LocalizationCache.Get("Operation")</th>
                     </tr>
                 </thead>
@@ -155,10 +159,17 @@
                             <td>@user.Id</td>
                             <td>@user.name</td>
                             <td>@LocalizationCache.Get(user.description)</td>
-                            <td>
-                                <a class="btn btn-warning" id="submitbuttonn1" href="@Url.Action("AddRoles", "Login", new { Id = user.Id })">@LocalizationCache.Get("Edit")</a>
-                                <button type="button" class="btn btn-danger delete-btn m-1" data-userid="@user.Id">@LocalizationCache.Get("Delete")</button>
+                           <td>
+                                <a class="btn btn-warning d-inline-flex align-items-center mx-1 my-1" id="submitbuttonn1" 
+                                   href="@Url.Action("Profile", "Login", new { Id = user.Id })">
+                                    <i class="bi bi-pencil-square me-1"></i> @LocalizationCache.Get("Edit")
+                                </a>
+                                <button type="button" class="btn btn-danger delete-btn d-inline-flex align-items-center" data-userid="@user.Id">
+                                    <i class="bi bi-trash-fill me-1"></i> @LocalizationCache.Get("Delete")
+                                </button>
                             </td>
+
+
                         </tr>
                     }
                 </tbody>
@@ -166,9 +177,9 @@
         </div>
     </div>
 
-    <footer>
+   @*  <footer>
         © 2025 - LoginProject - <a href="#" class="text-decoration-none">@LocalizationCache.Get("Privacy")</a>
-    </footer>
+    </footer> *@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -186,7 +197,7 @@
                     location.reload();
                 },
                 error: function () {
-                    alert('Language change failed.');
+                    alert("@Html.Raw(LocalizationCache.Get("Language change failed."))"); 
                 }
             });
         });
@@ -206,7 +217,7 @@
                     window.location.href = "/Login/AddRoles?id" + id;
                 },
                 error: function (xhr, status, error) {
-                    alert("Unexpected result has occured.");
+                    alert("@Html.Raw(LocalizationCache.Get("Unexpected result has occurred."))");
                     console.log(error);
                 }
             });
@@ -222,11 +233,11 @@
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(Id),
                 success: function () {
-                    alert("The role has been deleted.");
+                    alert("@Html.Raw(LocalizationCache.Get("The role has been deleted."))"); 
                     location.reload();
                 },
                 error: function (xhr) {
-                    var message = "Unexpected error occurred.";
+                    var message = "@Html.Raw(LocalizationCache.Get("Unexpected error occurred."))";
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         message = xhr.responseJSON.message;
                     } else if (xhr.responseText) {
@@ -239,25 +250,6 @@
         });
 
 
-        // // Delete
-        // $(".delete-btn").click(function () {
-        //     var Id = $(this).data("userid");
-
-        //     $.ajax({
-        //         url: "@Url.Action("Roles", "Login")",
-        //         type: "post",
-        //         contentType: "application/json; charset=utf-8",
-        //         data: JSON.stringify(Id),
-        //         success: function () {
-        //             alert("The user has been deleted.");
-        //             location.reload();
-        //         },
-        //         error: function (xhr, status, error) {
-        //             alert("Unexpected error occurred.");
-        //             console.log(error);
-        //         }
-        //     });
-        // });
 
         //Add Roles
         $(document).on("click", "Roleadd", function () {
@@ -272,7 +264,7 @@
                     window.location.href = "/Login/AddRoles";
                 },
                 error: function (xhr, status, error) {
-                    alert("Unexpected result has occured.");
+                    alert("@Html.Raw(LocalizationCache.Get("Unexpected result has occurred."))");
                     console.log(error);
                 }
             });

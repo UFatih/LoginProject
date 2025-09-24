@@ -24,6 +24,7 @@
         body {
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
             background-image: url('/img/bgg2.jpg');
             background-size: cover;
             background-repeat: no-repeat;
@@ -36,9 +37,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-top: 40px;
-            padding-bottom: 40px;
+            padding: 40px 0;
         }
+
 
         .login-container {
             background-color: whitesmoke;
@@ -54,13 +55,13 @@
             margin-bottom: 30px;
         }
 
-        footer {
-            background-color: floralwhite !important;
-            text-align: start;
-            padding: 20px;
-            padding-left: 20px;
-            font-size: 14px;
-        }
+        /*  footer {
+                            background-color: floralwhite !important;
+                            text-align: start;
+                            padding: 20px;
+                            padding-left: 20px;
+                            font-size: 14px;
+                        } */
 
         #usernamewarning {
             display: none;
@@ -71,7 +72,7 @@
 </head>
 <body>
 
-    
+
     @{
         var currentLanguage = Context.Session.GetString("Language") ?? "tr";
     }
@@ -161,12 +162,25 @@
                                style="cursor:pointer; position:absolute; right:10px; top:50%; transform:translateY(-50%);">
                             </i>
                         </div>
+                        <div class="progress mt-2" style="height: 18px;">
+                            <div id="passwordStrength" class="progress-bar"></div>
+                        </div>
+                        <small id="strengthText" class="form-text"></small>
+                    </div>
+                    <div class="form-group col-md-10">
+                        <label for="inputRepeatPassword4">@LocalizationCache.Get("Password Repeat")</label>
+                        <div class="position-relative">
+                            <input type="password" class="form-control" id="inputRepeatPassword4" value="@Model.User.password">
+                            <i class="bi bi-eye-fill fs-4" id="toggleRepeatPassword"
+                               style="cursor:pointer; position:absolute; right:10px; top:50%; transform:translateY(-50%);">
+                            </i>
+                        </div>
                     </div>
 
                 </div>
                 <div class="form-group col-md-10">
                     <label for="inputUsername">@LocalizationCache.Get("Username")</label>
-                    <input type="text" class="form-control" id="inputUsername" value="@Model.User.username">                  
+                    <input type="text" class="form-control" id="inputUsername" value="@Model.User.username">
                     <span id="usernamewarning">@LocalizationCache.Get("Maximum 10 characters!")</span>
                 </div>
                 <div class="form-group col-md-10">
@@ -191,25 +205,72 @@
         </div>
     </div>
 
-    <footer>
-        © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
+    @* <footer>
+    © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
     </footer>
-
+    *@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
 
-        // Toggle eye button for password visibility
-        const togglePassword = document.querySelector('#togglePassword');
         const passwordInput = document.querySelector('#inputPassword4');
+        const strengthBar = document.querySelector('#passwordStrength');
+        const strengthText = document.querySelector('#strengthText');
+        const togglePassword = document.querySelector('#togglePassword');
+        const toggleRepeatPassword = document.querySelector('#toggleRepeatPassword');
+        const RepeatpasswordInput = document.querySelector('#inputRepeatPassword4');
 
+        // Password Strength
+        passwordInput.addEventListener("input", function () {
+            const value = passwordInput.value;
+
+            if (value.length === 0) {
+                strengthBar.style.width = "0";
+                strengthBar.className = "progress-bar";
+                strengthBar.textContent = "";
+                strengthText.textContent = "";
+                return;
+            }
+
+            let strength = 0;
+            if (value.length >= 6) strength++;
+            if (/[A-Z]/.test(value)) strength++;
+            if (/[0-9]/.test(value)) strength++;
+            if (/[^A-Za-z0-9]/.test(value)) strength++;
+            if (value.length >= 12) strength++;
+
+            const categories = [
+                { text: "@Html.Raw(LocalizationCache.Get("Very Weak"))", color: "bg-danger", width: "20%" },
+                { text: "@Html.Raw(LocalizationCache.Get("Weak"))", color: "bg-warning", width: "40%" },
+                { text: "@Html.Raw(LocalizationCache.Get("Medium"))", color: "bg-info", width: "60%" },
+                { text: "@Html.Raw(LocalizationCache.Get("Strong"))", color: "bg-primary", width: "80%" },
+                { text: "@Html.Raw(LocalizationCache.Get("Very Strong"))", color: "bg-success", width: "100%" }
+            ];
+
+
+            const current = categories[Math.min(strength, 4)];
+            strengthBar.className = "progress-bar " + current.color;
+            strengthBar.style.width = current.width;
+            strengthBar.textContent = current.text;
+            strengthText.textContent = "@Html.Raw(LocalizationCache.Get("Password Strength: "))" + current.text;
+        });
+
+        // Toggle Password
         togglePassword.addEventListener('click', function () {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-
             this.classList.toggle('bi-eye-fill');
             this.classList.toggle('bi-eye-slash-fill');
         });
+
+        // Toggle Repeat Password
+        toggleRepeatPassword.addEventListener('click', function () {
+            const type = RepeatpasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            RepeatpasswordInput.setAttribute('type', type);
+            this.classList.toggle('bi-eye-fill');
+            this.classList.toggle('bi-eye-slash-fill');
+        });
+
 
         // Language switch
         $('#languageDropdown').change(function () {
@@ -223,7 +284,7 @@
                     location.reload();
                 },
                 error: function () {
-                    alert('Language change failed.');
+                    alert("@Html.Raw(LocalizationCache.Get("Language change failed."))");
                 }
             });
         });
@@ -251,6 +312,8 @@
             });
 
             var username = $("#inputUsername").val();
+            var password = $("#inputPassword4").val();
+            var RepeatPassword = $("#inputRepeatPassword4").val();
 
             if (username.length > 10) {
                 $("#usernamewarning").show();
@@ -259,11 +322,16 @@
                 $("#usernamewarning").hide();
             }
 
+            if (password !== RepeatPassword) {
+                alert("@Html.Raw(LocalizationCache.Get("Passwords do not match"))")
+                return;
+            }
+
             var updateUser = {
                 User: {
                     Id: $("#IdId").val(),
                     email: $("#inputEmail4").val(),
-                    password: $("#inputPassword4").val(),
+                    password: password,
                     username: $("#inputUsername").val(),
                     job: $("#inputJob").val(),
                 },
@@ -279,7 +347,7 @@
                     window.location.href = "/Login/Success";
                 },
                 error: function (xhr, status, error) {
-                    alert("Unexpected result has occured.");
+                    alert("@Html.Raw(LocalizationCache.Get("Unexpected result has occurred."))");
                     console.log(error);
                 }
             });

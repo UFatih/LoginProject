@@ -12,6 +12,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using BCrypt.Net;
 using System.Net;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using Business.Helpers;
 
 
 namespace LoginProject.Controllers
@@ -40,9 +41,15 @@ namespace LoginProject.Controllers
 
             var userId = HttpContext.Session.GetInt32("CurrentUser");
             if (userId == null)
-            {
-                return RedirectToAction("Login", "Home");
+            {           
+                return RedirectToAction("Loginn", "Login");
             }
+
+            if(userId != null) 
+            {
+                var currentUser = _userService.GetUserById(userId.Value);
+                ViewBag.Username = currentUser.username;
+            }     
 
             int? roleId = _userService.GetBaseUserRoleIdByUserId(userId.Value);
             var roles = _userService.GetUserRoles();
@@ -50,6 +57,8 @@ namespace LoginProject.Controllers
             model.IsLogLogin = roles.Where(x => x.Id == roleId).Any(x => x.islogloginchecked);
 
             return View(model);
+
+          
         }
 
 
@@ -127,17 +136,6 @@ namespace LoginProject.Controllers
             //}
 
         }
-
-
-
-
-        //[HttpPost]
-        //public IActionResult ChangeLanguage(string language)
-        //{
-        //    _localizationService.Load(language);
-        //    HttpContext.Session.SetString("Language", language);
-        //    return RedirectToAction("Success");
-        //}
 
 
         [HttpPost]
@@ -400,6 +398,7 @@ namespace LoginProject.Controllers
                 };
                 _userService.AddUserLoginLog(failedlog);
 
+              
             }
 
             return Json(false);
@@ -476,8 +475,7 @@ namespace LoginProject.Controllers
                 };
 
                 return View(emptyProfile);
-            }
-            else
+            }            else
             {
                 var userProfile = _userService.GetUserProfileById(Id.Value);
                 return View(userProfile);
@@ -490,8 +488,19 @@ namespace LoginProject.Controllers
         {
             if (model == null || model.User == null)
             {
-                return BadRequest(new { success = false, message = "Missing user data" });
+                return BadRequest(new { success = false, message = LocalizationCache.Get("Missing user data") });
             }
+
+            if (string.IsNullOrEmpty(model.User.password))
+            {
+                return BadRequest(new { success = false, message = LocalizationCache.Get("Password cannot be empty") });
+            }
+
+            if (!string.IsNullOrEmpty(model.RepeatPassword) && model.User.password != model.RepeatPassword)
+            {
+                return BadRequest(new { success = false, message = LocalizationCache.Get("Passwords do not match") });
+            }
+
 
             BaseUser user;
             bool isNewUser = false;
@@ -530,7 +539,8 @@ namespace LoginProject.Controllers
                 }
             }
 
-            return Ok(new { success = true, message = isNewUser ? "User has been successfully added" : "User has been successfully updated" });
+           
+            return Ok(new { success = true, message = isNewUser ? LocalizationCache.Get("User has been successfully added") : LocalizationCache.Get("User has been successfully updated")});
         }
 
 
@@ -547,10 +557,10 @@ namespace LoginProject.Controllers
         {
             if (_userService.IsRoleAssigned(Id))
             {
-                return BadRequest("This role is assigned to one or more users and cannot be deleted.");
+                return BadRequest(LocalizationCache.Get("This role is assigned to one or more users and cannot be deleted."));
             }
             _userService.RoleDelete(Id);
-            return Ok("Role has been deleted.");
+            return Ok(LocalizationCache.Get("Role has been deleted."));
         }
 
 
@@ -575,12 +585,12 @@ namespace LoginProject.Controllers
             if (entity2.Id == null)
             {
                 _userService.AddingRoles(entity2);
-                return Ok(new { Message = "User has been added" });
+                return Ok(new { Message = LocalizationCache.Get("User has been added") });
             }
             else
             {
                 _userService.UpdateRole(entity2);
-                return Ok(new { Message = "User has been updated" });
+                return Ok(new { Message = LocalizationCache.Get("User has been updated") });
             }
 
         }

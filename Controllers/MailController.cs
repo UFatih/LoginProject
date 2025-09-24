@@ -1,4 +1,5 @@
 ﻿using Business;
+using Business.Helpers;
 using Business.Interface;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -33,7 +34,7 @@ namespace LoginProject.Controllers
 
             Task.Run(() => _mailService.SendMailAsync(user));
 
-            ViewBag.Message = "Mail has been sent!";
+            ViewBag.Message = LocalizationCache.Get("Mail has been sent!");
             var users = _userService.PreapareUserDto();
             return View("~/Views/Login/Success.cshtml", new UserList { IsAuthority = true, IsLogLogin = true, Users = users });
 
@@ -67,7 +68,7 @@ namespace LoginProject.Controllers
 
             );
 
-            TempData["Success"] = "Password reset link has been sent to your email!";
+            TempData["Success"] = LocalizationCache.Get("Password reset link has been sent to your email!");
             return RedirectToAction("Success", "Login");
         }
 
