@@ -1,8 +1,10 @@
-using Business.Interface;
+﻿using Business.Interface;
 using Business;
 using Entities;
 using LoginProject;
 using Microsoft.EntityFrameworkCore;
+using Hangfire;
+using Hangfire.SqlServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +16,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IMailService, MailService>();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 
-
 builder.Services.AddSession();
 builder.Services.AddDistributedMemoryCache();
 
+// Hangfire
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -37,6 +42,15 @@ app.UseRouting();
 app.UseSession();
 
 app.UseAuthorization();
+
+// Hangfire Dashboard (localhost:7053/hangfire adresinden erişebilirsin) 
+app.UseHangfireDashboard();
+
+// Background service 
+RecurringJob.AddOrUpdate<IUserService>(
+    "clear-old-logs",
+    service => service.ClearOldLogs(),
+    Cron.Hourly);
 
 app.MapControllerRoute(
     name: "default",
