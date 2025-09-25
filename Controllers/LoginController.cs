@@ -13,6 +13,7 @@ using BCrypt.Net;
 using System.Net;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Business.Helpers;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 
 namespace LoginProject.Controllers
@@ -86,19 +87,23 @@ namespace LoginProject.Controllers
         [HttpPost]
         public IActionResult ResetPassword([FromBody] ResetPasswordViewModel modelPass)
         {
-
             if (string.IsNullOrEmpty(modelPass.NewPassword) || string.IsNullOrEmpty(modelPass.ConfirmPassword))
-            {  // ModelState ->> Structure that maintains the accuracy and validity of the data coming from the form.
+            {
                 ModelState.AddModelError("", "Passwords cannot be empty!");
                 return View(modelPass);
             }
 
             var userPass = _userService.GetUserById(modelPass.Id);
+
             if (string.IsNullOrEmpty(userPass.PasswordResetToken) || userPass.PasswordResetToken != modelPass.Token)
             {
                 return BadRequest("Invalid token");
             }
 
+            if (BCrypt.Net.BCrypt.Verify(modelPass.NewPassword, userPass.password))
+            {
+                return BadRequest("New password cannot be the same as the old password!");
+            }
 
             userPass.password = BCrypt.Net.BCrypt.HashPassword(modelPass.NewPassword);
             userPass.PasswordResetToken = null;
@@ -108,34 +113,8 @@ namespace LoginProject.Controllers
 
             TempData["Success"] = "Password has been successfully updated!";
             return RedirectToAction("Loginn", "Login");
-
-
-            //1)
-
-            //if (userPass == null)
-            //{
-            //    return BadRequest("User not found");
-            //}
-
-            //if (userPass.PasswordResetToken != modelPass.Token)
-            //{
-            //    return BadRequest($"Token mismatch: Expected {userPass.PasswordResetToken}, Got {modelPass.Token}");
-            //}
-
-            //if (userPass.PasswordResetTokenExpiresAt < DateTime.UtcNow)
-            //{
-            //    return BadRequest("Token expired");
-            //}
-
-
-            //2)
-
-            //if (userPass == null || userPass.PasswordResetToken != modelPass.Token || userPass.PasswordResetTokenExpiresAt < DateTime.UtcNow)
-            //{
-            //    return BadRequest("Invalid or expired link");
-            //}
-
         }
+
 
 
         [HttpPost]
@@ -404,59 +383,6 @@ namespace LoginProject.Controllers
             return Json(false);
         }
 
-
-        //[HttpPost]
-        //public IActionResult Loginn([FromBody] UserProfile entity)
-        //{
-
-        //    HttpContext.Session.SetString("IsLoggedIn", "true");
-
-        //    //var user = _userService.GetAllUsers()
-        //    //   .FirstOrDefault(u => u.email == entity.User.email && u.password == entity.User.password);
-
-        //    var user = _userService.GetAllUsers()
-        //        .FirstOrDefault(u => u.email == entity.User.email);
-
-        //    //&& BCrypt.Net.BCrypt.Verify(entity.User.password, user.password)
-        //    if (user != null && BCrypt.Net.BCrypt.Verify(entity.User.password, user.password)) // Şifreleri manuel değil hashli eklemek gerek
-        //    {
-        //        HttpContext.Session.SetInt32("CurrentUser", user.Id);
-
-        //        var roles = _userService.GetUserRolesByUserId(user.Id);
-        //        var isAdmin = roles.Any(r => r.ischecked);
-
-        //        HttpContext.Session.SetString("IsAuthority", isAdmin ? "true" : "false");
-
-        //        var firstRole = roles.FirstOrDefault();
-        //        if (firstRole != null)
-        //        {
-        //            HttpContext.Session.SetInt32("RoleId", firstRole.Id);
-        //        }
-
-        //        string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-        //        if (ipAddress == "::1") //localhost
-        //        {
-        //            ipAddress = "192.168.1.16";
-        //        }
-        //        var loglogin = new UserLoginLog
-        //        {
-        //            UserId = user.Id,
-        //            UserName = user.username,
-        //            IPAddress = ipAddress,
-        //            LoginDate = DateTime.Now,
-        //            BrowserInfo = Request.Headers["User-Agent"].ToString()
-        //        };
-        //        _userService.AddUserLoginLog(loglogin);
-
-        //        return Json(true);
-        //    }
-
-        //    return Json(false);
-        //}
-
-
-
         [HttpGet] //Add, Edit
         public IActionResult Profile(int? Id)
         {
@@ -522,6 +448,12 @@ namespace LoginProject.Controllers
             {
                 // Current user, Updating 
                 user = _userService.GetUserById(model.User.Id);
+
+                if (BCrypt.Net.BCrypt.Verify(model.User.password, user.password))
+                {
+                    return BadRequest(new { success = false, message = "New password cannot be the same as the old password!" });
+                }
+
                 user.email = model.User.email;
                 user.username = model.User.username;
                 user.password = BCrypt.Net.BCrypt.HashPassword(model.User.password);
@@ -529,6 +461,7 @@ namespace LoginProject.Controllers
                 _userService.UserUpdate(user);
                 _userService.DeleteRolesByUserId(user.Id);
             }
+
 
             // Roller
             if (model.SelectedRoleIds != null && model.SelectedRoleIds.Any())
