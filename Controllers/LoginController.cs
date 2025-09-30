@@ -42,15 +42,15 @@ namespace LoginProject.Controllers
 
             var userId = HttpContext.Session.GetInt32("CurrentUser");
             if (userId == null)
-            {           
+            {
                 return RedirectToAction("Loginn", "Login");
             }
 
-            if(userId != null) 
+            if (userId != null)
             {
                 var currentUser = _userService.GetUserById(userId.Value);
                 ViewBag.Username = currentUser.username;
-            }     
+            }
 
             int? roleId = _userService.GetBaseUserRoleIdByUserId(userId.Value);
             var roles = _userService.GetUserRoles();
@@ -59,7 +59,7 @@ namespace LoginProject.Controllers
 
             return View(model);
 
-          
+
         }
 
 
@@ -78,10 +78,10 @@ namespace LoginProject.Controllers
             if (userPassReset == null || userPassReset.PasswordResetToken != token || userPassReset.PasswordResetTokenExpiresAt < DateTime.UtcNow)
             {
                 return BadRequest("Invalid or expired link");
-                
+
             }
             return View(new ResetPasswordViewModel { Id = id, Token = token });
-           
+
         }
 
         [HttpPost]
@@ -300,11 +300,40 @@ namespace LoginProject.Controllers
         {
             HttpContext.Session.SetString("IsLoggedIn", "true");
 
+            const int Max_Fails = 3;
+            const int Locked_Time = 1; // 1 min
+            
+
             var user = _userService.GetAllUsers()
                 .FirstOrDefault(u => u.email == entity.User.email);
 
-            
-            if (user != null) 
+            // Lock Control
+            if (user.LockedUntilUTC.HasValue && user.LockedUntilUTC.Value > DateTime.UtcNow)
+            {
+                // Fail log
+                var lockRemaining = (int)(user.LockedUntilUTC.Value - DateTime.UtcNow).TotalSeconds;
+
+                var failedlogLocked = new UserLoginLog
+                {
+                    UserId = user.Id,
+                    UserName = user.username,
+                    IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    LoginDate = DateTime.Now, // loglar local time tutuyor istersen UTC yap
+                    BrowserInfo = Request.Headers["User-Agent"].ToString(),
+                    IsSuccess = false
+                };
+                _userService.AddUserLoginLog(failedlogLocked);
+
+                return Json(new
+                {
+                    success = false,
+                    locked = true,
+                    remainingSeconds = lockRemaining,
+                    message = $"Hesabınız kilitlendi! {lockRemaining} saniye sonra tekrar deneyebilirsiniz."
+                });
+            }
+
+            if (user != null)
             {
                 bool isPasswordValid = false;
 
@@ -315,7 +344,6 @@ namespace LoginProject.Controllers
                     if (user.password == entity.User.password)
                     {
                         isPasswordValid = true;
-
                         user.password = BCrypt.Net.BCrypt.HashPassword(entity.User.password);
                         _userService.UserUpdate(user);
                     }
@@ -331,9 +359,11 @@ namespace LoginProject.Controllers
                 // login logs
                 if (isPasswordValid) //The flag(isPasswordValid) is used to determine whether the password is correct and to log the user in if so.
                 {
-                    
-                    HttpContext.Session.SetInt32("CurrentUser", user.Id);
+                    user.FailedLoginCount = 0;
+                    user.LockedUntilUTC = null;
+                    _userService.UserUpdate(user);
 
+                    HttpContext.Session.SetInt32("CurrentUser", user.Id);
                     var roles = _userService.GetUserRolesByUserId(user.Id);
                     var isAdmin = roles.Any(r => r.ischecked);
                     HttpContext.Session.SetString("IsAuthority", isAdmin ? "true" : "false");
@@ -346,7 +376,7 @@ namespace LoginProject.Controllers
 
                     // Success Login ✅
                     string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-                    if (ipAddress == "::1") ipAddress = "192.168.1.16";                                  
+                    if (ipAddress == "::1") ipAddress = "192.168.1.16";
 
                     var loglogin = new UserLoginLog
                     {
@@ -359,28 +389,44 @@ namespace LoginProject.Controllers
                     };
                     _userService.AddUserLoginLog(loglogin);
 
-                    return Json(true);
+                    return Json(new { success = true });
                 }
 
-                // Failed Login ❌
-                string failedloginIp = HttpContext.Connection.RemoteIpAddress?.ToString(); 
-                if(failedloginIp == "::1" ) failedloginIp = "192.168.1.16";
-                 
-                var failedlog = new UserLoginLog 
+                if (!isPasswordValid) // Wrong Password
                 {
-                    UserId = user?.Id ?? 0,
-                    UserName = user?.username,
-                    IPAddress = failedloginIp,
-                    LoginDate = DateTime.Now,
-                    BrowserInfo = Request.Headers["User-Agent"].ToString(),
-                    IsSuccess = false
-                };
-                _userService.AddUserLoginLog(failedlog);
+                    user.FailedLoginCount += 1;
+                    if (user.FailedLoginCount >= Max_Fails) 
+                    {
+                        user.LockedUntilUTC = DateTime.UtcNow.AddMinutes(Locked_Time); // Locking
+                        user.FailedLoginCount = 0;
+                    }
+                    _userService.UserUpdate(user);
 
-              
+                    // Failed Login ❌
+                    string failedloginIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+                    if (failedloginIp == "::1") failedloginIp = "192.168.1.16";
+
+                    var failedlog = new UserLoginLog
+                    {
+                        UserId = user?.Id ?? 0,
+                        UserName = user?.username,
+                        IPAddress = failedloginIp,
+                        LoginDate = DateTime.Now,
+                        BrowserInfo = Request.Headers["User-Agent"].ToString(),
+                        IsSuccess = false
+                    };
+                    _userService.AddUserLoginLog(failedlog);
+                }         
+
             }
 
-            return Json(false);
+            return Json(new
+            {
+                success = false,
+                locked = false,
+                message = "E-posta veya şifre hatalı!"
+            });
+
         }
 
         [HttpGet] //Add, Edit
@@ -401,7 +447,8 @@ namespace LoginProject.Controllers
                 };
 
                 return View(emptyProfile);
-            }            else
+            }
+            else
             {
                 var userProfile = _userService.GetUserProfileById(Id.Value);
                 return View(userProfile);
@@ -441,7 +488,7 @@ namespace LoginProject.Controllers
                     password = BCrypt.Net.BCrypt.HashPassword(model.User.password),
                     job = model.User.job
                 };
-                _userService.UserAdd(user); 
+                _userService.UserAdd(user);
                 isNewUser = true;
             }
             else
@@ -472,8 +519,8 @@ namespace LoginProject.Controllers
                 }
             }
 
-           
-            return Ok(new { success = true, message = isNewUser ? LocalizationCache.Get("User has been successfully added") : LocalizationCache.Get("User has been successfully updated")});
+
+            return Ok(new { success = true, message = isNewUser ? LocalizationCache.Get("User has been successfully added") : LocalizationCache.Get("User has been successfully updated") });
         }
 
 

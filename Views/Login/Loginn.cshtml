@@ -12,13 +12,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-        
+
         html, body {
             height: 100%;
             margin: 0;
             display: flex;
             flex-direction: column;
         }
+
         body {
             background-image: url('/img/bg7.jpg');
             background-size: cover;
@@ -26,8 +27,9 @@
             background-position: center;
             padding-bottom: 70px;
         }
+
         .login-container {
-            flex: 1; 
+            flex: 1;
             background-color: whitesmoke;
             padding: 40px;
             border-radius: 10px;
@@ -52,8 +54,20 @@
             padding: 20px 0 20px 100px;
             font-size: 16px;
             text-align: center;
-            
         }
+
+        #loginError {
+            background-color: #ffe6e6; /* pastel kırmızı */
+            color: #b30000; /* daha yumuşak kırmızı */
+            border: 1px solid #ffcccc;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            text-align: center;
+            width: 100%;
+        }
+
+
 
     </style>
 </head>
@@ -145,6 +159,12 @@
                style="cursor:pointer; position:absolute; right:10px; top:41%;">
             </i>
         </div>
+        <div id="loginError" class="mt-2" style="display:none;">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <span id="loginErrorText"></span>
+        </div>
+
+        <div id="lockMessage" class="text-danger mt-7"></div>
 
         <div>
             <br />
@@ -154,8 +174,8 @@
     @* </form> *@
 
 
-   @*  <footer>
-        © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
+    @*  <footer>
+    © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
     </footer> *@
 
 
@@ -206,13 +226,29 @@
                     // data: { Id:0, email: email, password: password },
                     // dataType: 'json',
                     success: function (resp) {
-                        if (resp == true) {
+                        if (resp.success === true) {
                             window.location.href = "/Login/Success";
                         }
-                        else {
-                            window.location.href = "/Login/Error";
-
+                        else if (resp.locked === true) {
+                            var countdown = resp.remainingSeconds;
+                            var interval = setInterval(function () {
+                                if (countdown <= 0) {
+                                    clearInterval(interval);
+                                    $("#lockMessage").text("");
+                                } else {
+                                    $("#lockMessage").text("Hesabınız kilitli. Kalan süre: " + countdown + " saniye");
+                                    countdown--;
+                                }
+                            }, 1000);
                         }
+
+                        else {
+                            $("#loginError").text(resp.message || "E-posta veya şifre hatalı!");
+                            $("#loginError").show();
+                        }
+                        // else {
+                        //     window.location.href = "/Login/Error";
+                        // }
                     },
                     error: function (xhr, status, error) {
                         alert("@Html.Raw(LocalizationCache.Get("Unexpected result has occurred."))");

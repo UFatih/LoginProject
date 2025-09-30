@@ -43,7 +43,7 @@ app.UseSession();
 
 app.UseAuthorization();
 
-// Hangfire Dashboard (localhost:7053/hangfire adresinden erişebilirsin) 
+// Hangfire Dashboard (localhost:7053/hangfire)  
 app.UseHangfireDashboard();
 
 // Background service 
@@ -51,6 +51,11 @@ RecurringJob.AddOrUpdate<IUserService>(
     "clear-old-logs",
     service => service.ClearOldLogs(),
     Cron.Hourly);
+
+RecurringJob.AddOrUpdate<IUserService>(
+    "reset-locked-users",
+    service => service.ResetLockedUsers(),
+    Cron.Minutely);
 
 app.MapControllerRoute(
     name: "default",
