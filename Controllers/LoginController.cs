@@ -130,6 +130,24 @@ namespace LoginProject.Controllers
             return RedirectToAction("Loginn", "Login");
         }
 
+        [HttpGet]
+        public IActionResult ForgotPasswordPage() 
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Language")))
+            {
+                _localizationService.Load("tr");
+                HttpContext.Session.SetString("Language", "tr");
+            }
+            else
+            {
+                var language = HttpContext.Session.GetString("Language");
+                _localizationService.Load(language); 
+            }
+
+            return View(); 
+        }
+
+
         [HttpGet] //Pdf for Users
         public IActionResult UsersPdf()
         {

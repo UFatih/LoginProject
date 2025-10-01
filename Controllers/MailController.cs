@@ -64,12 +64,37 @@ namespace LoginProject.Controllers
                 receiverMail: "fatihkusaslan12345@gmail.com",
                 resetLink: resetLink,
                 userEmail: userPass.email
-
-
             );
 
             TempData["Success"] = LocalizationCache.Get("Password reset link has been sent to your email!");
             return RedirectToAction("Success", "Login");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPasswordLinkByEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return Json(new { success = false, message = "Email is required" });
+
+            var userPass = _userService.GetAllUsers().FirstOrDefault(u => u.email == email);
+            if (userPass == null)
+                return Json(new { success = false, message = LocalizationCache.Get("User not found") });
+
+            var token = Guid.NewGuid().ToString();
+            userPass.PasswordResetToken = token;
+            userPass.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(30);
+            _userService.UserUpdate(userPass);
+
+            var resetLink = Url.Action("ResetPassword", "Login",
+                new { id = userPass.Id, token = token }, Request.Scheme);
+
+            await _mailService.SendPasswordResetLinkAsync(
+                receiverMail: "fatihkusaslan12345@gmail.com",
+                resetLink: resetLink,
+                userEmail: userPass.email
+            );
+
+            return Json(new { success = true, message = "Password reset link sent!" });
         }
 
 

@@ -55,14 +55,6 @@
             margin-bottom: 30px;
         }
 
-        /*  footer {
-                            background-color: floralwhite !important;
-                            text-align: start;
-                            padding: 20px;
-                            padding-left: 20px;
-                            font-size: 14px;
-                        } */
-
         #usernamewarning {
             display: none;
             color: red;
@@ -205,10 +197,6 @@
         </div>
     </div>
 
-    @* <footer>
-    © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
-    </footer>
-    *@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
@@ -252,7 +240,7 @@
             strengthBar.className = "progress-bar " + current.color;
             strengthBar.style.width = current.width;
             strengthBar.textContent = current.text;
-            strengthText.textContent = "@Html.Raw(LocalizationCache.Get("Password Strength: "))" + current.text;
+            strengthText.textContent = "@Html.Raw(LocalizationCache.Get("Password Strength: "))" + " " + current.text;
         });
 
         // Toggle Password
@@ -323,7 +311,7 @@
             }
 
             if (password !== RepeatPassword) {
-                alert("@Html.Raw(LocalizationCache.Get("Passwords do not match"))")
+                alert("@Html.Raw(LocalizationCache.Get("Passwords do not match!"))")
                 return;
             }
 

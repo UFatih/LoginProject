@@ -66,7 +66,18 @@
             text-align: center;
             width: 100%;
         }
-
+        .forgot-link {
+            font-size: 14px;
+            color: #6c757d; 
+            text-decoration: none;
+            font-weight: 500; 
+            margin-left: 1px;
+        }
+        .forgot-link:hover {
+                color: #dc3545; 
+                text-decoration: underline;
+                font-weight: 600;
+        }
 
 
     </style>
@@ -165,18 +176,20 @@
         </div>
 
         <div id="lockMessage" class="text-danger mt-7"></div>
-
-        <div>
-            <br />
+        
+       @*ForgotPasswordPage Link *@
+        <div class="col-md-9 text-start mt-1">
+            <a href="@Url.Action("ForgotPasswordPage","Login")" class="forgot-link">
+                @LocalizationCache.Get("Forgot Password?")
+            </a>
         </div>
+
+
+         <br/>
+        
         <button type="button" class="btn btn-primary" id="submitbutton">@LocalizationCache.Get("Login")</button>
     </div>
     @* </form> *@
-
-
-    @*  <footer>
-    © 2025 - LoginProject - <a href="#">@LocalizationCache.Get("Privacy")</a>
-    </footer> *@
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
