@@ -331,6 +331,9 @@ namespace LoginProject.Controllers
                 // Fail log
                 var lockRemaining = (int)(user.LockedUntilUTC.Value - DateTime.UtcNow).TotalSeconds;
 
+                var role = _userService.GetUserRolesByUserId(user.Id);
+                var roleName = role.FirstOrDefault()?.name ?? "User"; 
+
                 var failedlogLocked = new UserLoginLog
                 {
                     UserId = user.Id,
@@ -338,6 +341,7 @@ namespace LoginProject.Controllers
                     IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
                     LoginDate = DateTime.Now, // loglar local time tutuyor istersen UTC yap
                     BrowserInfo = Request.Headers["User-Agent"].ToString(),
+                    Role = roleName,
                     IsSuccess = false
                 };
                 _userService.AddUserLoginLog(failedlogLocked);
@@ -396,6 +400,9 @@ namespace LoginProject.Controllers
                     string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
                     if (ipAddress == "::1") ipAddress = "192.168.1.16";
 
+                    var role = _userService.GetUserRolesByUserId(user.Id);
+                    var roleName = role.FirstOrDefault()?.name ?? "User";
+
                     var loglogin = new UserLoginLog
                     {
                         UserId = user.Id,
@@ -403,7 +410,8 @@ namespace LoginProject.Controllers
                         IPAddress = ipAddress,
                         LoginDate = DateTime.Now,
                         BrowserInfo = Request.Headers["User-Agent"].ToString(),
-                        IsSuccess = true
+                        Role = roleName,
+                        IsSuccess = true                         
                     };
                     _userService.AddUserLoginLog(loglogin);
 
@@ -424,6 +432,9 @@ namespace LoginProject.Controllers
                     string failedloginIp = HttpContext.Connection.RemoteIpAddress?.ToString();
                     if (failedloginIp == "::1") failedloginIp = "192.168.1.16";
 
+                    var role = _userService.GetUserRolesByUserId(user.Id); 
+                    var roleName = role.FirstOrDefault()?.name ?? "User";
+
                     var failedlog = new UserLoginLog
                     {
                         UserId = user?.Id ?? 0,
@@ -431,6 +442,7 @@ namespace LoginProject.Controllers
                         IPAddress = failedloginIp,
                         LoginDate = DateTime.Now,
                         BrowserInfo = Request.Headers["User-Agent"].ToString(),
+                        Role = roleName,
                         IsSuccess = false
                     };
                     _userService.AddUserLoginLog(failedlog);
@@ -602,7 +614,7 @@ namespace LoginProject.Controllers
                 EndDate = DateTime.Now
             };
 
-            filtered.Results = _userService.GetLoginLogs(null, null, filtered.StartDate, filtered.EndDate, null, null);
+            filtered.Results = _userService.GetLoginLogs(null, null, filtered.StartDate, filtered.EndDate, null, null, null);
 
             return View(filtered);
         }
@@ -624,6 +636,7 @@ namespace LoginProject.Controllers
                 filtered.StartDate,
                 filtered.EndDate,
                 filtered.BrowserInfo,
+                filtered.Role,
                 isSuccessFilter
             );
 
