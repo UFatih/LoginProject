@@ -249,16 +249,24 @@
                                     clearInterval(interval);
                                     $("#lockMessage").text("");
                                 } else {
-                                    $("#lockMessage").text("Hesabınız kilitli. Kalan süre: " + countdown + " saniye");
+                                    $("#lockMessage").text(
+                                        "@Html.Raw(LocalizationCache.Get("Your account is locked. Remaining time:")) "
+                                        + countdown + " "
+                                        + "@Html.Raw(LocalizationCache.Get("second"))"
+                                    );
+
                                     countdown--;
                                 }
                             }, 1000);
                         }
 
                         else {
-                            $("#loginError").text(resp.message || "E-posta veya şifre hatalı!");
+                            $("#loginError").text(
+                                resp.message || "@Html.Raw(LocalizationCache.Get("Email or password is incorrect!"))"
+                            );
                             $("#loginError").show();
                         }
+
                         // else {
                         //     window.location.href = "/Login/Error";
                         // }

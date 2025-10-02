@@ -454,7 +454,7 @@ namespace LoginProject.Controllers
             {
                 success = false,
                 locked = false,
-                message = "E-posta veya şifre hatalı!"
+                message = LocalizationCache.Get("Email or password is incorrect!")
             });
 
         }
@@ -528,7 +528,7 @@ namespace LoginProject.Controllers
 
                 if (BCrypt.Net.BCrypt.Verify(model.User.password, user.password))
                 {
-                    return BadRequest(new { success = false, message = "New password cannot be the same as the old password!" });
+                    return BadRequest(new { success = false, message = LocalizationCache.Get("New password cannot be the same as the old password!") });
                 }
 
                 user.email = model.User.email;
@@ -627,6 +627,8 @@ namespace LoginProject.Controllers
 
             if (!filtered.EndDate.HasValue)
                 filtered.EndDate = DateTime.Now;
+
+            filtered.EndDate = filtered.EndDate.Value.Date.AddDays(1).AddTicks(-1);
 
             bool? isSuccessFilter = filtered.IsSuccess;
 
