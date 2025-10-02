@@ -109,7 +109,7 @@
     @*
     <h2>@LocalizationCache.Get("Login Successfully 🎉🎉")</h2>
     <br /> *@
-
+    @*User Card *@
     <div class="d-flex justify-content-center mt-3">
         <div class="card shadow border-0"
              style="max-width: 320px; width: 100%; border-radius: 15px;
@@ -127,6 +127,16 @@
                 <p class="mb-0" style="font-size: 12px; opacity: 0.85;">
                     @LocalizationCache.Get("Glad to see you again") 🚀
                 </p>
+                @if (ViewBag.LastLogin != null)
+                {
+                    <div class="mt-2">
+                        <span class="badge bg-info text-dark" style="font-size:13px; padding:6px 10px;">
+                            @LocalizationCache.Get("Last Login:")
+                            @(((DateTime)ViewBag.LastLogin).ToString("dd.MM.yyyy, HH:mm"))
+                        </span>
+                    </div>
+                }
+
             </div>
         </div>
     </div>

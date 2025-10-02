@@ -50,6 +50,17 @@ namespace LoginProject.Controllers
             {
                 var currentUser = _userService.GetUserById(userId.Value);
                 ViewBag.Username = currentUser.username;
+
+                // Last Login Data
+                var lastLogin = _userService
+                  .GetLoginLogs(currentUser.username, null, null, null, null, null, true)
+                  .OrderByDescending(x => x.LoginDate)
+                  .FirstOrDefault();
+
+                if (lastLogin != null)
+                {
+                    ViewBag.LastLogin = lastLogin.LoginDate; 
+                }
             }
 
             int? roleId = _userService.GetBaseUserRoleIdByUserId(userId.Value);
@@ -131,7 +142,7 @@ namespace LoginProject.Controllers
         }
 
         [HttpGet]
-        public IActionResult ForgotPasswordPage() 
+        public IActionResult ForgotPasswordPage()
         {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("Language")))
             {
@@ -141,10 +152,10 @@ namespace LoginProject.Controllers
             else
             {
                 var language = HttpContext.Session.GetString("Language");
-                _localizationService.Load(language); 
+                _localizationService.Load(language);
             }
 
-            return View(); 
+            return View();
         }
 
 
@@ -320,7 +331,7 @@ namespace LoginProject.Controllers
 
             const int Max_Fails = 3;
             const int Locked_Time = 1; // 1 min
-            
+
 
             var user = _userService.GetAllUsers()
                 .FirstOrDefault(u => u.email == entity.User.email);
@@ -332,7 +343,7 @@ namespace LoginProject.Controllers
                 var lockRemaining = (int)(user.LockedUntilUTC.Value - DateTime.UtcNow).TotalSeconds;
 
                 var role = _userService.GetUserRolesByUserId(user.Id);
-                var roleName = role.FirstOrDefault()?.name ?? "User"; 
+                var roleName = role.FirstOrDefault()?.name ?? "User";
 
                 var failedlogLocked = new UserLoginLog
                 {
@@ -411,7 +422,7 @@ namespace LoginProject.Controllers
                         LoginDate = DateTime.Now,
                         BrowserInfo = Request.Headers["User-Agent"].ToString(),
                         Role = roleName,
-                        IsSuccess = true                         
+                        IsSuccess = true
                     };
                     _userService.AddUserLoginLog(loglogin);
 
@@ -421,7 +432,7 @@ namespace LoginProject.Controllers
                 if (!isPasswordValid) // Wrong Password
                 {
                     user.FailedLoginCount += 1;
-                    if (user.FailedLoginCount >= Max_Fails) 
+                    if (user.FailedLoginCount >= Max_Fails)
                     {
                         user.LockedUntilUTC = DateTime.UtcNow.AddMinutes(Locked_Time); // Locking
                         user.FailedLoginCount = 0;
@@ -432,7 +443,7 @@ namespace LoginProject.Controllers
                     string failedloginIp = HttpContext.Connection.RemoteIpAddress?.ToString();
                     if (failedloginIp == "::1") failedloginIp = "192.168.1.16";
 
-                    var role = _userService.GetUserRolesByUserId(user.Id); 
+                    var role = _userService.GetUserRolesByUserId(user.Id);
                     var roleName = role.FirstOrDefault()?.name ?? "User";
 
                     var failedlog = new UserLoginLog
@@ -446,7 +457,7 @@ namespace LoginProject.Controllers
                         IsSuccess = false
                     };
                     _userService.AddUserLoginLog(failedlog);
-                }         
+                }
 
             }
 
