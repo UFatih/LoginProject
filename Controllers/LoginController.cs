@@ -51,16 +51,22 @@ namespace LoginProject.Controllers
                 var currentUser = _userService.GetUserById(userId.Value);
                 ViewBag.Username = currentUser.username;
 
+               
+
                 // Last Login Data
                 var lastLogin = _userService
                   .GetLoginLogs(currentUser.username, null, null, null, null, null, true)
                   .OrderByDescending(x => x.LoginDate)
                   .FirstOrDefault();
-
                 if (lastLogin != null)
                 {
                     ViewBag.LastLogin = lastLogin.LoginDate; 
                 }
+
+                // Role of Current User
+                var role = _userService.GetUserRolesByUserId(userId.Value);
+                var roleName = role.FirstOrDefault()?.name ?? "User";
+                ViewBag.Role = roleName;
             }
 
             int? roleId = _userService.GetBaseUserRoleIdByUserId(userId.Value);

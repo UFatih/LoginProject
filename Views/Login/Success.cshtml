@@ -102,6 +102,40 @@
                 box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
         }
 
+        /* Genel badge tasarımı */
+        .badge-admin,
+        .badge-brand,
+        .badge-editor,
+        .badge-user {
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 999px; /* tam yuvarlatılmış köşeler (pill style) */
+            margin-top: 6px;
+            display: inline-block;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* hafif gölge efekti */
+        }
+
+        /* Renkler log tablosuyla birebir uyumlu */
+        .badge-admin {
+            background-color: #dc3545; /* kırmızı */
+        }
+
+        .badge-brand {
+            background-color: #ffc107; /* sarı/turuncu */
+            color: #212529; /* kontrast için koyu yazı rengi */
+        }
+
+        .badge-editor {
+            background-color: #28a745; /* yeşil */
+        }
+
+        .badge-user {
+            background-color: #0d6efd; 
+        }
+
+
     </style>
 </head>
 <body>
@@ -124,7 +158,18 @@
                     style="font-size: 22px; color: #ffe066; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
                     @ViewBag.Username
                 </h3>
-                <p class="mb-0" style="font-size: 12px; opacity: 0.85;">
+                @if (ViewBag.Role != null)
+                {
+                    <span class="badge
+                    @(ViewBag.Role == "Admin" ? "badge-admin" :
+                      ViewBag.Role == "Brand Manager" ? "badge-brand" :
+                      ViewBag.Role == "Content Editor" ? "badge-editor" :
+                      "badge-user")">
+                        @ViewBag.Role
+                    </span>
+                }
+
+                <p class="mb-0 mt-2" style="font-size: 12px; opacity: 0.85;">
                     @LocalizationCache.Get("Glad to see you again") 🚀
                 </p>
                 @if (ViewBag.LastLogin != null)
@@ -136,7 +181,6 @@
                         </span>
                     </div>
                 }
-
             </div>
         </div>
     </div>
