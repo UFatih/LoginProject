@@ -645,7 +645,20 @@ namespace LoginProject.Controllers
             if (!filtered.EndDate.HasValue)
                 filtered.EndDate = DateTime.Now;
 
-            filtered.EndDate = filtered.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+            if (filtered.StartDate.HasValue && filtered.StartTime.HasValue)
+            {
+                filtered.StartDate = filtered.StartDate.Value.Date + filtered.StartTime.Value;
+            }
+
+            if (filtered.EndDate.HasValue && filtered.EndTime.HasValue)
+            {
+                filtered.EndDate = filtered.EndDate.Value.Date + filtered.EndTime.Value;
+            }
+
+            else if (filtered.EndDate.HasValue) 
+            {
+                filtered.EndDate = filtered.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+            }
 
             bool? isSuccessFilter = filtered.IsSuccess;
 

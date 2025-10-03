@@ -238,7 +238,14 @@
                                 <option value="User">User</option>
                             </select>
                         </div>
-
+                        <div class="col-md-6 col-lg-3">
+                            <label for="StartTime" class="form-label">@LocalizationCache.Get("Start Time")</label>
+                            <input type="time" class="form-control" name="StartTime" value="@(Model.StartTime?.ToString(@"hh\:mm") ?? "")" />
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label for="EndTime" class="form-label">@LocalizationCache.Get("End Time")</label>
+                            <input type="time" class="form-control" name="EndTime" value="@(Model.EndTime?.ToString(@"hh\:mm") ?? "")" />
+                        </div>
                         <div class="col-md-6 col-lg-3">
                             <label class="form-label d-block">@LocalizationCache.Get("Login Status")</label>
                             <div class="form-check form-check-inline">
@@ -273,8 +280,9 @@
                                     <th>@LocalizationCache.Get("Username")</th>
                                     <th>@LocalizationCache.Get("IP Address")</th>
                                     <th>@LocalizationCache.Get("Login Date")</th>
+                                    <th>@LocalizationCache.Get("Login Time")</th>
                                     <th>@LocalizationCache.Get("Browser")</th>
-                                    <th>@LocalizationCache.Get("Role")</th>
+                                    <th>@LocalizationCache.Get("Role")</th>                                
                                     <th>@LocalizationCache.Get("Login Status")</th>
                                 </tr>
                             </thead>
@@ -284,7 +292,8 @@
                                     <tr class="@(log.IsSuccess == true ? "table-success" : "table-danger")">
                                         <td>@log.UserName</td>
                                         <td>@log.IPAddress</td>
-                                        <td>@log.LoginDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                        <td>@log.LoginDate.ToString("yyyy/MM/dd")</td>
+                                        <td>@log.LoginDate.ToString("HH:mm")</td>
                                         <td>@log.BrowserInfo</td>
                                         <td>
                                             @if (log.Role == "Admin")
@@ -303,7 +312,7 @@
                                             {
                                                 <span class="badge badge-user">User</span>
                                             }
-                                        </td>
+                                        </td>                                     
                                         <td>
                                             @if (log.IsSuccess == true)
                                             {
