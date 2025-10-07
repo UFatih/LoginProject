@@ -87,7 +87,7 @@
         }
 
         .logout-btn {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            background: linear-gradient(135deg, #6a11cb, #2575fc); /* 🟣🔵 */
             color: white !important;
             font-weight: 600;
             border: none;
@@ -96,45 +96,78 @@
             transition: all 0.3s ease-in-out;
             box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
         }
-        .logout-btn:hover {
-                transform: scale(1.05);
-                background: linear-gradient(135deg, #ff4b2b, #ff416c);
-                box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
-        }
 
-        /* Genel badge tasarımı */
+            .logout-btn:hover {
+                transform: scale(1.05);
+                background: linear-gradient(135deg, #2575fc, #6a11cb);
+                box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
+            }
+
+
         .badge-admin,
         .badge-brand,
         .badge-editor,
         .badge-user {
             font-size: 13px;
             padding: 6px 14px;
-            border-radius: 999px; /* tam yuvarlatılmış köşeler (pill style) */
+            border-radius: 999px;
             margin-top: 6px;
             display: inline-block;
             font-weight: 600;
             color: #fff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15); /* hafif gölge efekti */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
-        /* Renkler log tablosuyla birebir uyumlu */
+
         .badge-admin {
-            background-color: #dc3545; /* kırmızı */
+            background-color: #dc3545;
         }
 
         .badge-brand {
-            background-color: #ffc107; /* sarı/turuncu */
-            color: #212529; /* kontrast için koyu yazı rengi */
+            background-color: #ffc107;
+            color: #212529;
         }
 
         .badge-editor {
-            background-color: #28a745; /* yeşil */
+            background-color: #28a745;
         }
 
         .badge-user {
-            background-color: #0d6efd; 
+            background-color: #0d6efd;
         }
 
+
+        /* Modern floating alert box (for Add/Update user) */
+        .custom-alert {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-30px);
+            background: linear-gradient(135deg, #ff6a00, #ee0979); /* 💥 Yeni renk */
+            color: white;
+            font-weight: 500;
+            padding: 14px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            transition: all 0.6s ease;
+            display: flex;
+            align-items: center;
+            z-index: 2000;
+            font-size: 16px;
+            letter-spacing: 0.3px;
+        }
+
+
+        .alert-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .custom-alert.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
 
     </style>
 </head>
@@ -147,34 +180,32 @@
     <div class="d-flex justify-content-center mt-3">
         <div class="card shadow border-0"
              style="max-width: 320px; width: 100%; border-radius: 15px;
-                background: linear-gradient(135deg, #4facfe, #6a11cb); color: #fff;">
+            background: linear-gradient(135deg, #4facfe, #6a11cb); color: #fff;">
             <div class="card-body text-center p-3">
                 <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
                      style="width: 60px; height: 60px; background: rgba(255,255,255,0.2);">
                     <i class="bi bi-person-fill" style="font-size: 30px; color:white;"></i>
                 </div>
-                <h6 class="fw-semibold mb-1" style="opacity: 0.9;">@LocalizationCache.Get("Welcome Back") 🎉</h6>
+
                 <h3 class="fw-bold mb-2"
                     style="font-size: 22px; color: #ffe066; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
                     @ViewBag.Username
                 </h3>
+
                 @if (ViewBag.Role != null)
                 {
                     <span class="badge
-                    @(ViewBag.Role == "Admin" ? "badge-admin" :
-                      ViewBag.Role == "Brand Manager" ? "badge-brand" :
-                      ViewBag.Role == "Content Editor" ? "badge-editor" :
-                      "badge-user")">
+                @(ViewBag.Role == "Admin" ? "badge-admin" :
+                  ViewBag.Role == "Brand Manager" ? "badge-brand" :
+                  ViewBag.Role == "Content Editor" ? "badge-editor" :
+                  "badge-user")">
                         @ViewBag.Role
                     </span>
                 }
-
-                <p class="mb-0 mt-2" style="font-size: 12px; opacity: 0.85;">
-                    @LocalizationCache.Get("Glad to see you again") 🚀
-                </p>
+                
                 @if (ViewBag.LastLogin != null)
                 {
-                    <div class="mt-2">
+                    <div class="mt-2 pt-2">
                         <span class="badge bg-info text-dark" style="font-size:13px; padding:6px 10px;">
                             @LocalizationCache.Get("Last Login:")
                             @(((DateTime)ViewBag.LastLogin).ToString("dd.MM.yyyy, HH:mm"))
@@ -194,6 +225,24 @@
 
 
     <div class="top-right-widgets">
+
+        <!-- User Add notification box -->
+        <div id="customAlert" class="custom-alert">
+            <div class="alert-content">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span>@LocalizationCache.Get("User has been added/updated successfully!") 🎉</span>
+            </div>
+        </div>
+
+
+        <!-- Login welcome alert -->
+        <div id="welcomeAlert" class="custom-alert">
+            <div class="alert-content">
+                <i class="bi bi-person-check-fill me-2"></i>
+                <span id="welcomeText"></span>
+            </div>
+        </div>
+
         <!-- Saat Kartı -->
         <div id="clock-card" class="card shadow-sm border-0"
              style="width:auto; background: linear-gradient(135deg,#6a11cb,#2575fc);
@@ -270,7 +319,7 @@
         </div>
 
     </div>
-   
+
 
     <div class="login">
 
@@ -453,7 +502,6 @@
                     console.log(error);
                 }
             });
-
         });
 
         // Delete
@@ -548,6 +596,68 @@
 
         updateClock();
         setInterval(updateClock, 1000);
+
+
+        // User Add Alert
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userAdded = urlParams.get('added');
+
+            if (userAdded === "true") {
+                const alertBox = document.getElementById("customAlert");
+
+                alertBox.classList.add("show");
+
+                setTimeout(() => {
+                    alertBox.classList.remove("show");
+                }, 5000);
+            }
+        });
+
+        // User Login Alert
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userAdded = urlParams.get('added');
+            const userLogin = urlParams.get('login');
+
+            if (userAdded === "true") {
+                const alertBox = document.getElementById("customAlert");
+                alertBox.classList.add("show");
+                setTimeout(() => alertBox.classList.remove("show"), 4000);
+            }
+            if (userLogin === "true") {
+                const welcomeAlert = document.getElementById("welcomeAlert");
+                const welcomeText = document.getElementById("welcomeText");
+
+                const username = "@ViewBag.Username";
+                const role = "@ViewBag.Role";
+
+                let gradient = "";
+                switch (role) {
+                    case "Admin":
+                        gradient = "linear-gradient(135deg, #ff416c, #ff4b2b)";
+                        break;
+                    case "Brand Manager":
+                        gradient = "linear-gradient(135deg, #ffcf1b, #ff9f00)";
+                        break;
+                    case "Content Editor":
+                        gradient = "linear-gradient(135deg, #11998e, #38ef7d)";
+                        break;
+                    default:
+                        gradient = "linear-gradient(135deg, #4facfe, #00f2fe)";
+                }
+
+                welcomeAlert.style.background = gradient;
+
+                welcomeText.textContent = `@Html.Raw(LocalizationCache.Get("Welcome Back")), ${username}! 👋`;
+
+                welcomeAlert.classList.add("show");
+
+                setTimeout(() => welcomeAlert.classList.remove("show"), 5000);
+            }
+        });
+
+
 
     </script>
 </body>

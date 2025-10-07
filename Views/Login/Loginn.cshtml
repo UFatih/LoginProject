@@ -240,7 +240,7 @@
                     // dataType: 'json',
                     success: function (resp) {
                         if (resp.success === true) {
-                            window.location.href = "/Login/Success";
+                            window.location.href = "/Login/Success?login=true";
                         }
                         else if (resp.locked === true) {
                             var countdown = resp.remainingSeconds;

@@ -332,7 +332,7 @@
                 contentType: "application/json; charset=utf-8",
                 data: JSON.stringify(updateUser),
                 success: function () {
-                    window.location.href = "/Login/Success";
+                    window.location.href = "/Login/Success?added=true";
                 },
                 error: function (xhr, status, error) {
                     alert("@Html.Raw(LocalizationCache.Get("Unexpected result has occurred."))");
