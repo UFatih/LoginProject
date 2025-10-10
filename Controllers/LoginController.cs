@@ -14,6 +14,7 @@ using System.Net;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Business.Helpers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Serilog;
 
 
 namespace LoginProject.Controllers
@@ -351,12 +352,16 @@ namespace LoginProject.Controllers
                 var role = _userService.GetUserRolesByUserId(user.Id);
                 var roleName = role.FirstOrDefault()?.name ?? "User";
 
+                Log.Warning("🔒 kullanıcı {email} hesabı kilitlendi. {seconds} saniye sonra tekrar deneyebilir.",
+      user.email, lockRemaining);
+
+
                 var failedlogLocked = new UserLoginLog
                 {
                     UserId = user.Id,
                     UserName = user.username,
                     IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    LoginDate = DateTime.Now, // loglar local time tutuyor istersen UTC yap
+                    LoginDate = DateTime.Now, 
                     BrowserInfo = Request.Headers["User-Agent"].ToString(),
                     Role = roleName,
                     IsSuccess = false
@@ -395,9 +400,10 @@ namespace LoginProject.Controllers
                     }
                 }
 
-                // login logs
+                // Login logs
                 if (isPasswordValid) //The flag(isPasswordValid) is used to determine whether the password is correct and to log the user in if so.
                 {
+
                     user.FailedLoginCount = 0;
                     user.LockedUntilUTC = null;
                     _userService.UserUpdate(user);
@@ -419,6 +425,10 @@ namespace LoginProject.Controllers
 
                     var role = _userService.GetUserRolesByUserId(user.Id);
                     var roleName = role.FirstOrDefault()?.name ?? "User";
+
+                    Log.Information("✅ Kullanıcı {Username} ({Email}) başarılı şekilde giriş yaptı. IP: {IP}, Rol: {Role}",
+               user.username, user.email, ipAddress, roleName);
+
 
                     var loglogin = new UserLoginLog
                     {
@@ -451,6 +461,10 @@ namespace LoginProject.Controllers
 
                     var role = _userService.GetUserRolesByUserId(user.Id);
                     var roleName = role.FirstOrDefault()?.name ?? "User";
+
+                    Log.Error("⚠️ Hatalı giriş denemesi. Kullanıcı: {Email}, IP: {IP}, Rol: {Role}, Zaman: {Time}",
+             user?.email, failedloginIp, roleName, DateTime.Now);
+
 
                     var failedlog = new UserLoginLog
                     {

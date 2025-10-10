@@ -87,7 +87,7 @@
         }
 
         .logout-btn {
-            background: linear-gradient(135deg, #6a11cb, #2575fc); /* 🟣🔵 */
+            background: linear-gradient(135deg, #6a11cb, #2575fc); 
             color: white !important;
             font-weight: 600;
             border: none;
@@ -137,13 +137,12 @@
         }
 
 
-        /* Modern floating alert box (for Add/Update user) */
         .custom-alert {
             position: fixed;
             top: 25px;
             left: 50%;
             transform: translateX(-50%) translateY(-30px);
-            background: linear-gradient(135deg, #ff6a00, #ee0979); /* 💥 Yeni renk */
+            background: linear-gradient(135deg, #ff6a00, #ee0979); 
             color: white;
             font-weight: 500;
             padding: 14px 30px;
@@ -431,6 +430,7 @@
     </footer> *@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
 
@@ -451,7 +451,7 @@
             });
         });
 
-        //Forgot Password
+        // Forgot Password
         function iforgotpassword(userIdd) {
             $.ajax({
                 url: '@Url.Action("ForgotPasswordLink", "Mail")',
@@ -467,7 +467,7 @@
             });
         }
 
-        //Send Mail
+        // Send Mail
         function sendmailuser(userId) {
             $.ajax({
                 url: '@Url.Action("SendMail", "Mail")',
@@ -483,7 +483,7 @@
             });
         }
 
-        //Edit
+        // Edit
         $(document).on("click", "submitbuttonn1", function () {
 
             var Id = $(this).data("userid");
@@ -507,24 +507,49 @@
         // Delete
         $(".delete-btn").click(function () {
             var Id = $(this).data("userid");
-
-            $.ajax({
-                url: "@Url.Action("Success", "Login")",
-                type: "post",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(Id),
-                success: function () {
-                    alert("The user has been deleted.");
-                    location.reload();
-                },
-                error: function (xhr, status, error) {
-                    alert("@Html.Raw(LocalizationCache.Get("Unexpected result has occurred."))");
-                    console.log(error);
+            Swal.fire({
+                title: '@Html.Raw(LocalizationCache.Get("Are you sure?"))',
+                text: '@Html.Raw(LocalizationCache.Get("This user will be permanently deleted!"))',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '@Html.Raw(LocalizationCache.Get("Yes, delete!"))',
+                cancelButtonText: '@Html.Raw(LocalizationCache.Get("Cancel"))'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "@Url.Action("Success", "Login")",  
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify(Id), 
+                        success: function () {
+                            Swal.fire({
+                                title: '@Html.Raw(LocalizationCache.Get("Deleted!"))',
+                                text: '@Html.Raw(LocalizationCache.Get("User has been deleted successfully."))',
+                                icon: 'success',
+                                confirmButtonText: '@Html.Raw(LocalizationCache.Get("OK"))'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            Swal.fire({
+                                title: '@Html.Raw(LocalizationCache.Get("Error!"))',
+                                text: '@Html.Raw(LocalizationCache.Get("An error occurred while deleting the user."))',
+                                icon: 'error',
+                                confirmButtonText: '@Html.Raw(LocalizationCache.Get("Close"))'
+                            });
+                            console.log("XHR Status: " + xhr.status);
+                            console.log("Response: " + xhr.responseText);
+                            console.log("Error: " + error);
+                        }
+                    });
                 }
             });
         });
 
-        //Add User
+        // Add User
         $(document).on("click", "addbutton", function () {
 
             // var username = $("#inputUsername").val();
@@ -543,7 +568,7 @@
             });
         });
 
-        //User Role
+        // User Role
         $(document).on("click", "rolepage", function () {
             $.ajax({
                 url: "@Url.Action("Roles", "Login")",
@@ -560,7 +585,7 @@
             });
         });
 
-        //Login Logs
+        // Login Logs
         $(document).on("click", "loginlogbtn", function () {
 
 

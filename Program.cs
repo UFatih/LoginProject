@@ -5,8 +5,22 @@ using LoginProject;
 using Microsoft.EntityFrameworkCore;
 using Hangfire;
 using Hangfire.SqlServer;
+using Serilog;
+using DocumentFormat.OpenXml.Bibliography;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+     .WriteTo.Seq("http://localhost:5341")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -41,7 +55,7 @@ app.UseRouting();
 
 app.UseSession();
 
-app.UseAuthorization();
+app.UseAuthorization(); 
 
 // Hangfire Dashboard (localhost:7053/hangfire)  
 app.UseHangfireDashboard();
@@ -60,5 +74,6 @@ RecurringJob.AddOrUpdate<IUserService>(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Login}/{action=Loginn}/{id?}");
+
 
 app.Run();
