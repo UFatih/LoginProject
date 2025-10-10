@@ -641,14 +641,23 @@ namespace LoginProject.Controllers
         {
             var filtered = new LoginLogFilterViewModel
             {
-                StartDate = DateTime.Now.AddDays(-14),
-                EndDate = DateTime.Now
+                StartDate = DateTime.Now.AddDays(-14).Date,
+                EndDate = DateTime.Now.Date.AddDays(1).AddTicks(-1),
+                SortBy = "" 
             };
-
-            filtered.Results = _userService.GetLoginLogs(null, null, filtered.StartDate, filtered.EndDate, null, null, null);
+            filtered.Results = _userService.GetLoginLogs(
+                null,
+                null,
+                filtered.StartDate,
+                filtered.EndDate,
+                null,
+                null,
+                null
+            ).OrderBy(l => l.LoginDate).ToList(); 
 
             return View(filtered);
         }
+
 
         [HttpPost]
         public IActionResult LoginLogs(LoginLogFilterViewModel filtered)
@@ -668,15 +677,14 @@ namespace LoginProject.Controllers
             {
                 filtered.EndDate = filtered.EndDate.Value.Date + filtered.EndTime.Value;
             }
-
-            else if (filtered.EndDate.HasValue) 
+            else if (filtered.EndDate.HasValue)
             {
                 filtered.EndDate = filtered.EndDate.Value.Date.AddDays(1).AddTicks(-1);
             }
 
             bool? isSuccessFilter = filtered.IsSuccess;
 
-            filtered.Results = _userService.GetLoginLogs(
+            var logs = _userService.GetLoginLogs(
                 filtered.UserName,
                 filtered.IPAddress,
                 filtered.StartDate,
@@ -684,10 +692,44 @@ namespace LoginProject.Controllers
                 filtered.BrowserInfo,
                 filtered.Role,
                 isSuccessFilter
-            );
+            ).ToList(); 
+
+            if (!string.IsNullOrEmpty(filtered.SortBy))
+            {
+                switch (filtered.SortBy)
+                {
+                    case "DateAsc":
+                        logs = logs.OrderBy(l => l.LoginDate).ToList();
+                        break;
+                    case "DateDesc":
+                        logs = logs.OrderByDescending(l => l.LoginDate).ToList();
+                        break;
+                    case "UsernameAsc":
+                        logs = logs.OrderBy(l => l.UserName).ToList();
+                        break;
+                    case "UsernameDesc":
+                        logs = logs.OrderByDescending(l => l.UserName).ToList();
+                        break;
+                    case "RoleAsc":
+                        logs = logs.OrderBy(l => l.Role).ToList();
+                        break;
+                    case "RoleDesc":
+                        logs = logs.OrderByDescending(l => l.Role).ToList();
+                        break;
+                }
+            }
+            else
+            {
+                filtered.SortBy = "DateAsc"; 
+                logs = logs.OrderBy(l => l.LoginDate).ToList();
+            }
+
+  
+            filtered.Results = logs;
 
             return View(filtered);
         }
+
 
 
         public IActionResult Logout()

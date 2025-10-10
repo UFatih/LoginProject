@@ -67,15 +67,17 @@
                 right: 14px;
                 transform: translateY(-50%);
                 pointer-events: none;
-                font-size: 1.2rem; 
-                color: #6c63ff; 
+                font-size: 1.2rem;
+                color: #6c63ff;
                 transition: transform 0.2s ease-in-out;
             }
 
             .custom-select-wrapper select:focus + .select-icon {
                 transform: translateY(-50%) rotate(180deg);
-                color: #4a47a3; ,,
+                color: #4a47a3;
+                ,,
             }
+
             .custom-select-wrapper select {
                 appearance: none;
                 -webkit-appearance: none;
@@ -85,10 +87,10 @@
                 font-size: 14px;
             }
 
-            .custom-select-wrapper select:focus {
-                border-color: #86b7fe;
-                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-            }
+                .custom-select-wrapper select:focus {
+                    border-color: #86b7fe;
+                    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+                }
 
         /* Admin */
         #role.admin-selected:focus {
@@ -114,24 +116,49 @@
             box-shadow: 0 0 0 0.25rem rgba(33, 150, 243, 0.25);
         }
 
-        /* Optional */
         .badge-admin {
-            background-color: #dc3545; 
+            background-color: #dc3545;
         }
 
         .badge-brand {
-            background-color: #ffc107; 
-            color: #212529; 
+            background-color: #ffc107;
+            color: #212529;
         }
 
         .badge-editor {
-            background-color: #28a745; 
+            background-color: #28a745;
         }
 
         .badge-user {
             background-color: #0d6efd;
         }
 
+        #role .all-option {
+            color: #4a8cff !important;
+            background-color: #f0f4ff !important;
+            font-weight: 550;
+        }
+
+
+            #role .all-option:hover {
+                background-color: #e0ecff !important;
+            }
+
+
+        #SortBy.form-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/sort-alpha-down.svg");
+            background-repeat: no-repeat;
+            background-position: right 0.8rem center;
+            background-size: 18px 18px;
+            padding-right: 2.5rem;
+        }
+
+            #SortBy.form-select:focus {
+                background-image: url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/sort-alpha-up.svg");
+            }
     </style>
 </head>
 <body>
@@ -231,11 +258,23 @@
                         <div class="col-md-6 col-lg-3">
                             <label for="role" class="form-label">@LocalizationCache.Get("Role")</label>
                             <select asp-for="Role" id="role" class="form-select">
-                                <option value="">@LocalizationCache.Get("All")</option>
+                                <option value="" class="all-option">@LocalizationCache.Get("All")</option>
                                 <option value="Admin">Admin</option>
                                 <option value="Brand Manager">Brand Manager</option>
                                 <option value="Content Editor">Content Editor</option>
                                 <option value="User">User</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <label for="SortBy" class="form-label">@LocalizationCache.Get("SortBy")</label>
+                            <select asp-for="SortBy" class="form-select" id="SortBy">
+                                <option value="" class="all-option2">@LocalizationCache.Get("All")</option>
+                                <option value="DateDesc">@LocalizationCache.Get("DateDesc")</option>
+                                <option value="DateAsc">@LocalizationCache.Get("DateAsc")</option>
+                                <option value="UsernameAsc">@LocalizationCache.Get("UsernameAsc")</option>
+                                <option value="UsernameDesc">@LocalizationCache.Get("UsernameDesc")</option>
+                                <option value="RoleAsc">@LocalizationCache.Get("RoleAsc")</option>
+                                <option value="RoleDesc">@LocalizationCache.Get("RoleDesc")</option>
                             </select>
                         </div>
                         <div class="col-md-6 col-lg-3">
@@ -282,7 +321,7 @@
                                     <th>@LocalizationCache.Get("Login Date")</th>
                                     <th>@LocalizationCache.Get("Login Time")</th>
                                     <th>@LocalizationCache.Get("Browser")</th>
-                                    <th>@LocalizationCache.Get("Role")</th>                                
+                                    <th>@LocalizationCache.Get("Role")</th>
                                     <th>@LocalizationCache.Get("Login Status")</th>
                                 </tr>
                             </thead>
@@ -312,7 +351,7 @@
                                             {
                                                 <span class="badge badge-user">User</span>
                                             }
-                                        </td>                                     
+                                        </td>
                                         <td>
                                             @if (log.IsSuccess == true)
                                             {
@@ -333,7 +372,7 @@
                 else
                 {
                     <div class="alert alert-warning mt-3">
-                       @Html.Raw(LocalizationCache.Get("No Record Has Found!"))
+                        @Html.Raw(LocalizationCache.Get("No Record Has Found!"))
                     </div>
                 }
             </div>
@@ -357,7 +396,7 @@
                     location.reload();
                 },
                 error: function () {
-                    alert("@Html.Raw(LocalizationCache.Get("Language change failed."))"); 
+                    alert("@Html.Raw(LocalizationCache.Get("Language change failed."))");
                 }
             });
         });
@@ -367,15 +406,17 @@
             $('#role').select2({
                 placeholder: "@LocalizationCache.Get("Seçiniz")",
                 allowClear: true,
-                width: '100%' 
+                width: '100%'
             });
         });
-
         $('#role').on('change', function () {
             var selected = $(this).val();
-            $(this).removeClass('admin-selected brand-selected editor-selected user-selected');
+            $(this).removeClass('all-selected admin-selected brand-selected editor-selected user-selected');
 
-            if (selected === "Admin") {
+            if (selected === "") {
+                $(this).addClass('all-selected');
+            }
+            else if (selected === "Admin") {
                 $(this).addClass('admin-selected');
             }
             else if (selected === "Brand Manager") {
@@ -386,6 +427,38 @@
             }
             else if (selected === "User") {
                 $(this).addClass('user-selected');
+            }
+        });
+
+
+        // SortBy dropdown
+        $(document).ready(function () {
+            $('#SortBy').select2({
+                placeholder: "@LocalizationCache.Get("Seçiniz")",
+                allowClear: true,
+                width: '100%'
+            });
+
+            var currentSort = "@Model.SortBy";
+            if (currentSort) {
+                $('#SortBy').val(currentSort).trigger('change');
+            }
+        });
+        $('#SortBy').on('change', function () {
+            var selected = $(this).val();
+            $(this).removeClass('all-selected date-selected username-selected role-selected');
+
+            if (selected === "") {
+                $(this).addClass('all-selected');
+            }
+            else if (selected === "DateAsc" || selected === "DateDesc") {
+                $(this).addClass('date-selected');
+            }
+            else if (selected === "UsernameAsc" || selected === "UsernameDesc") {
+                $(this).addClass('username-selected');
+            }
+            else if (selected === "RoleAsc" || selected === "RoleDesc") {
+                $(this).addClass('role-selected');
             }
         });
 
